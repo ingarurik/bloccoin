@@ -853,7 +853,7 @@
       document.getElementById('pgOverlay').classList.add('show');
     };
     
-    iframe.src = '/' + filename;
+    iframe.src = filename;
     closePanel();
   }
 
@@ -864,7 +864,7 @@
     const iframe = document.getElementById('pgIframe');
     if (iframe) iframe.src = '';
     // Allow the overlay fade-out to complete, then go back to index.html
-    setTimeout(() => { window.location.href = '/'; }, 220);
+    setTimeout(() => { window.location.href = 'index.html'; }, 220);
   }
 
   document.addEventListener('click', e => {
