@@ -325,12 +325,21 @@
       border-right: 1px solid rgba(240,192,64,.15);
       display: flex; flex-direction: column; align-items: center;
       padding: 14px 0 20px; gap: 4px;
+      overflow: visible;
       /* Transition de glissement */
-      transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: width 0.32s cubic-bezier(0.4, 0, 0.2, 1), background 0.2s, border-color 0.2s;
     }
     /* Classe ajoutée par JS pour rétracter */
     .sb-rail.collapsed {
-      transform: translateX(-100%);
+      width: 0;
+      background: transparent;
+      border-right-color: transparent;
+    }
+    .sb-rail.collapsed .sb-logo,
+    .sb-rail.collapsed .sb-sep,
+    .sb-rail.collapsed .sb-btn {
+      opacity: 0;
+      pointer-events: none;
     }
 
     /* ── Bouton flèche sur le bord droit de la rail ── */
@@ -364,34 +373,6 @@
     .sb-rail-toggle .arrow { transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1); display: block; }
     /* Quand rétractée, la flèche pointe vers la droite (pour rouvrir) */
     .sb-rail.collapsed .sb-rail-toggle .arrow { transform: rotate(180deg); }
-
-    /* ── Petit onglet visible quand la rail est fermée ── */
-    /* Il est positionné fixed à gauche:0 et reste toujours visible */
-    .sb-reopen-tab {
-      position: fixed;
-      left: 100; top: 50%;
-      transform: translateY(-50%);
-      z-index: 802;
-      width: 18px; height: 152px;
-      background: #06101e;
-      border: 1px solid rgba(240,192,64,.3);
-      border-left: none;
-      border-radius: 0 8px 8px 0;
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      color: rgba(240,192,64,.7);
-      font-size: 0.5rem;
-      /* Caché par défaut */
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.25s ease, background 0.2s, color 0.2s, border-color 0.2s, width 0.2s;
-    }
-    .sb-reopen-tab:hover {
-      background: rgba(240,192,64,.12);
-      color: var(--gold);
-      border-color: rgba(240,192,64,.55);
-      width: 22px;
-    }
 
     /* ── Logo ── */
     .sb-logo {
@@ -494,11 +475,6 @@
   <div class="sb-sep"></div>
   <button class="sb-btn" data-tip="Aide & FAQ" onclick="openCat('aide',this)">❓</button>
 </div>
-
-<!-- Onglet de réouverture — visible uniquement quand la rail est rétractée -->
-<button class="sb-reopen-tab" id="sbReopenTab" onclick="toggleRail()" title="Afficher la barre">
-  ▶
-</button>
 
 <!-- ═══ PANEL ═══ -->
 <div class="sb-panel" id="sbPanel">
@@ -769,15 +745,26 @@
   /* ═══ SIDEBAR ═══ */
   const CATS = {
     accueil: { ico:'🏠', ttl:'Accueil', pages:[
-      {ico:'📄',lbl:'Présentation'},{ico:'🖼️',lbl:'Ingarurik'},{ico:'🎬',lbl:'Diaporama'},{ico:'🔗',lbl:'Réseaux sociaux'},
+      {ico:'📄',lbl:'Présentation',file:'Présentation.html'},
+      {ico:'🖼️',lbl:'Ingarurik',file:'Ingarurik.html'},
+      {ico:'🎬',lbl:'Diaporama',file:'Diaporama.html'},
+      {ico:'🔗',lbl:'Réseaux sociaux',file:'réseaux-sociaux.html'},
     ]},
     serveur: { ico:'⚙️', ttl:'Serveur', pages:[
-      {ico:'🗺️',lbl:'Map'},{ico:'📜',lbl:'Règlement'},{ico:'👥',lbl:'Personnel'},{ico:'🏆',lbl:'Grades'},
-      {ico:'💎',lbl:'Dons',badge:'Nouveau'},{ico:'🗳️',lbl:'Vote'},{ico:'🏪',lbl:'Magasin'},{ico:'💬',lbl:'Discord'},{ico:'🎟️',lbl:'Stickers',badge:'A Venir'},
+      {ico:'🗺️',lbl:'Map',file:'Map.html'},
+      {ico:'📜',lbl:'Règlement',file:'Règlement.html'},
+      {ico:'👥',lbl:'Personnel',file:'Personnel.html'},
+      {ico:'🏆',lbl:'Grades',file:'Grades.html'},
+      {ico:'💎',lbl:'Dons',file:'Dons.html',badge:'Nouveau'},
+      {ico:'🗳️',lbl:'Vote',file:'Vote.html'},
+      {ico:'🏪',lbl:'Magasin',file:'Magasin.html'},
+      {ico:'💬',lbl:'Discord',file:'Discord.html'},
+      {ico:'🎟️',lbl:'Stickers',file:'Stickers.html',badge:'A Venir'},
     ]},
     /* 'secret' category removed */
     aide: { ico:'❓', ttl:'Aide & FAQ', pages:[
-      {ico:'🆘',lbl:'Assistance'},{ico:'🤝',lbl:'Communauté'},
+      {ico:'🆘',lbl:'Assistance',file:'Assistance.html'},
+      {ico:'🤝',lbl:'Communauté',file:'Communauté.html'},
     ]},
   };
 
@@ -788,7 +775,6 @@
   function toggleRail() {
     const rail      = document.getElementById('sbRail');
     const panel     = document.getElementById('sbPanel');
-    const reopenTab = document.getElementById('sbReopenTab');
 
     railOpen = !railOpen;
 
@@ -799,14 +785,10 @@
       rail.classList.add('collapsed');
       /* Masquer le panel aussi (il suit la rail) */
       panel.classList.add('hidden-with-rail');
-      /* Afficher l'onglet de réouverture */
-      reopenTab.classList.add('show');
     } else {
       /* Déployer la rail */
       rail.classList.remove('collapsed');
       panel.classList.remove('hidden-with-rail');
-      /* Cacher l'onglet de réouverture */
-      reopenTab.classList.remove('show');
     }
   }
 
@@ -823,7 +805,7 @@
     document.getElementById('sbList').innerHTML = c.pages.map(p => {
       const badge = p.badge ? `<span class="sb-item-badge">${p.badge}</span>` : '';
       const lock  = p.lock  ? `<span class="sb-item-lock">🔒</span>` : '';
-      return `<button class="sb-item" onclick="openPage('${p.lbl.replace(/'/g,"\\'")}')"><span class="sb-item-ico">${p.ico}</span>${p.lbl}${badge}${lock}</button>`;
+      return `<button class="sb-item" onclick="openPage('${p.lbl.replace(/'/g,"\\'")}', '${(p.file || '').replace(/'/g,"\\'")}')"><span class="sb-item-ico">${p.ico}</span>${p.lbl}${badge}${lock}</button>`;
     }).join('');
     panel.classList.add('open');
   }
@@ -834,15 +816,36 @@
     document.querySelectorAll('.sb-btn').forEach(b => b.classList.remove('active'));
   }
 
-  function openPage(lbl) {
-    const filename = lbl.toLowerCase().replace(/\s+/g, '-') + '.html';
+  function openPage(lbl, fileName) {
+    const filename = fileName || (lbl.toLowerCase().replace(/\s+/g, '-') + '.html');
+    const encodedPath = './' + encodeURI(filename);
     const iframe = document.getElementById('pgIframe');
     const pgFallback = document.getElementById('pgFallback');
+    const overlay = document.getElementById('pgOverlay');
+    const expectedName = filename.split('/').pop().toLowerCase();
     
     iframe.onload = function() {
+      let loadedName = '';
+      try {
+        const loadedPath = iframe.contentWindow?.location?.pathname || '';
+        loadedName = decodeURIComponent(loadedPath.split('/').pop() || '').toLowerCase();
+      } catch (_) {
+        /* Ignore cross-origin/location access issues and trust load */
+      }
+
+      /* Cloudflare can rewrite unknown files to index.html (200), avoid showing home in the overlay. */
+      if (loadedName === 'index.html' && expectedName !== 'index.html') {
+        iframe.style.display = 'none';
+        pgFallback.style.display = 'flex';
+        document.getElementById('pgBig').textContent = 'Page introuvable';
+        document.getElementById('pgSub').textContent = lbl + ' — fichier non trouve sur Cloudflare';
+        overlay.classList.add('show');
+        return;
+      }
+
       iframe.style.display = 'block';
       pgFallback.style.display = 'none';
-      document.getElementById('pgOverlay').classList.add('show');
+      overlay.classList.add('show');
     };
     
     iframe.onerror = function() {
@@ -850,10 +853,10 @@
       pgFallback.style.display = 'flex';
       document.getElementById('pgBig').textContent = 'En construction';
       document.getElementById('pgSub').textContent = lbl + ' — en construction';
-      document.getElementById('pgOverlay').classList.add('show');
+      overlay.classList.add('show');
     };
     
-    iframe.src = filename;
+    iframe.src = encodedPath;
     closePanel();
   }
 
@@ -871,8 +874,7 @@
     const rail      = document.getElementById('sbRail');
     const panel     = document.getElementById('sbPanel');
     const pg        = document.getElementById('pgOverlay');
-    const reopenTab = document.getElementById('sbReopenTab');
-    if (!rail.contains(e.target) && !panel.contains(e.target) && !pg.contains(e.target) && !reopenTab.contains(e.target) && activeCat) {
+    if (!rail.contains(e.target) && !panel.contains(e.target) && !pg.contains(e.target) && activeCat) {
       closePanel();
     }
   });
