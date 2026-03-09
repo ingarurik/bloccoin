@@ -3,34 +3,451 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>En construction</title>
+  <title>Bloc-Coin | Presentation du serveur</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
   <style>
-    html, body {
-      margin:0; padding:0;
-      width:100%; height:100%;
-      background: #060e1f;
-      color: var(--gold, #f0c040);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      flex-direction: column;
-      font-family:'Cinzel Decorative',serif;
-      text-transform:uppercase;
+    :root {
+      --gold: #f0c040;
+      --gold-dark: #b8860b;
+      --gold-light: #ffe87a;
+      --sky-deep: #060e1f;
+      --sky-mid: #0d1b35;
+      --text: #e8dcc8;
+      --text-dim: #a49479;
+      --accent: #c87941;
+      --card: rgba(10, 18, 35, 0.86);
+      --line: rgba(240, 192, 64, 0.18);
     }
-    .title {
-      font-size: clamp(2rem,8vw,4rem);
-      letter-spacing: .08em;
-      margin-bottom: 1rem;
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { min-height: 100%; }
+    body {
+      font-family: 'Crimson Text', Georgia, serif;
+      color: var(--text);
+      background: radial-gradient(circle at 15% 10%, rgba(240,192,64,0.08), transparent 35%),
+                  radial-gradient(circle at 85% 15%, rgba(120,160,255,0.12), transparent 40%),
+                  linear-gradient(180deg, #08122a, var(--sky-deep));
+      overflow-x: hidden;
     }
-    .sub {
-      font-size: clamp(0.8rem,3vw,1.2rem);
-      color: rgba(240,192,64,0.35);
-      letter-spacing: .25em;
+
+    .cloud-layer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .cloud {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(38px);
+      opacity: 0.12;
+      animation: drift linear infinite;
+    }
+
+    .cloud:nth-child(1) {
+      width: 420px;
+      height: 140px;
+      top: 8%;
+      left: -28%;
+      background: rgba(170, 204, 255, 0.35);
+      animation-duration: 80s;
+    }
+
+    .cloud:nth-child(2) {
+      width: 520px;
+      height: 170px;
+      top: 42%;
+      left: -34%;
+      background: rgba(255, 255, 255, 0.2);
+      animation-duration: 115s;
+      animation-delay: -22s;
+    }
+
+    .cloud:nth-child(3) {
+      width: 380px;
+      height: 120px;
+      top: 72%;
+      left: -24%;
+      background: rgba(240, 192, 64, 0.18);
+      animation-duration: 95s;
+      animation-delay: -45s;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.03;
+      background-image: radial-gradient(rgba(255,255,255,0.6) 0.5px, transparent 0.5px);
+      background-size: 3px 3px;
+    }
+
+    .wrap {
+      position: relative;
+      z-index: 1;
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 84px 24px 96px;
+    }
+
+    .hero {
+      border: 1px solid var(--line);
+      background: linear-gradient(140deg, rgba(240,192,64,0.1), transparent 30%), var(--card);
+      padding: 46px 34px;
+      box-shadow: 0 18px 60px rgba(0,0,0,0.45);
+      animation: rise 0.7s ease both, softGlow 5s ease-in-out infinite;
+    }
+
+    .eyebrow {
+      font-family: 'Cinzel', serif;
+      font-size: 0.66rem;
+      letter-spacing: 0.25em;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      font-family: 'Cinzel Decorative', serif;
+      font-size: clamp(2rem, 6.4vw, 4rem);
+      line-height: 1.08;
+      margin-bottom: 14px;
+      text-wrap: balance;
+    }
+
+    .gold { color: var(--gold); }
+
+    .lead {
+      font-size: clamp(1rem, 2.2vw, 1.3rem);
+      line-height: 1.75;
+      color: var(--text-dim);
+      max-width: 760px;
+      font-style: italic;
+    }
+
+    .quick {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1px;
+      margin-top: 26px;
+      border: 1px solid var(--line);
+      background: var(--line);
+    }
+
+    .q-item {
+      background: rgba(8, 16, 30, 0.92);
+      padding: 18px 16px;
+      text-align: center;
+    }
+
+    .q-label {
+      font-family: 'Cinzel', serif;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--text-dim);
+      font-size: 0.62rem;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .q-value {
+      font-family: 'Cinzel Decorative', serif;
+      color: var(--gold);
+      font-size: 1.25rem;
+    }
+
+    .section {
+      margin-top: 32px;
+      border: 1px solid var(--line);
+      background: var(--card);
+      padding: 32px;
+    }
+
+    .section h2 {
+      font-family: 'Cinzel', serif;
+      font-size: 1rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 12px;
+    }
+
+    .section p {
+      font-size: 1.05rem;
+      line-height: 1.75;
+      color: var(--text-dim);
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .card {
+      position: relative;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(7, 14, 27, 0.92);
+      padding: 18px;
+      transition: border-color 0.25s, transform 0.25s;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(240,192,64,0.8), transparent);
+      transform: scaleX(0);
+      transform-origin: center;
+      transition: transform 0.35s;
+    }
+
+    .card:hover {
+      border-color: rgba(240,192,64,0.38);
+      transform: translateY(-2px);
+    }
+
+    .card:hover::before {
+      transform: scaleX(1);
+    }
+
+    .card h3 {
+      font-family: 'Cinzel', serif;
+      font-size: 0.86rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .card p {
+      font-size: 0.98rem;
+      line-height: 1.65;
+      color: var(--text-dim);
+    }
+
+    .signature {
+      margin-top: 22px;
+      padding-top: 18px;
+      border-top: 1px solid rgba(240,192,64,0.2);
+      font-family: 'Cinzel', serif;
+      letter-spacing: 0.08em;
+      color: var(--gold-light);
+      font-size: 0.74rem;
+      text-transform: uppercase;
+    }
+
+    .note {
+      margin-top: 22px;
+      font-size: 0.92rem;
+      color: rgba(232,220,200,0.72);
+      border-left: 2px solid rgba(240,192,64,0.35);
+      padding-left: 12px;
+    }
+
+    [data-reveal] {
+      opacity: 0;
+      transform: translateY(22px);
+      transition: opacity 0.55s ease, transform 0.55s ease;
+    }
+
+    [data-reveal].is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes drift {
+      from { transform: translateX(0); }
+      to { transform: translateX(calc(100vw + 900px)); }
+    }
+
+    @keyframes softGlow {
+      0%, 100% { box-shadow: 0 18px 60px rgba(0,0,0,0.45); }
+      50% { box-shadow: 0 20px 72px rgba(240,192,64,0.12), 0 18px 60px rgba(0,0,0,0.45); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { animation: none !important; transition: none !important; }
+      [data-reveal] { opacity: 1; transform: none; }
+    }
+
+    @media (max-width: 800px) {
+      .wrap { padding: 42px 16px 52px; }
+      .hero, .section { padding: 22px 18px; }
+      .quick { grid-template-columns: 1fr; }
+      .cards { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
-  <div class="title">En construction</div>
-  <div class="sub">Présentation - en construction</div>
+  <div class="cloud-layer" aria-hidden="true">
+    <div class="cloud"></div>
+    <div class="cloud"></div>
+    <div class="cloud"></div>
+  </div>
+
+  <main class="wrap">
+    <section class="hero" data-reveal>
+      <div class="eyebrow">Serveur Minecraft Medieval</div>
+      <h1>Bienvenue sur <span class="gold">Bloc-Coin</span></h1>
+      <p class="lead">
+        Bloc-Coin est un univers medieval suspendu dans les nuages, base sur l'exploration,
+        le commerce et la progression en communaute. Ici, chaque joueur peut construire son
+        histoire, ouvrir son commerce et participer a un monde vivant qui evolue en continu.
+      </p>
+
+      <div class="quick">
+        <div class="q-item">
+          <span class="q-label">Version</span>
+          <span class="q-value">1.21.10</span>
+        </div>
+        <div class="q-item">
+          <span class="q-label">Mode</span>
+          <span class="q-value">Mini-jeux</span>
+        </div>
+        <div class="q-item">
+          <span class="q-label">Communaute</span>
+          <span class="q-value"><span id="communityCounter" data-target="300">0</span>+ joueurs</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" data-reveal>
+      <h2>Notre vision</h2>
+      <p>
+        Bloc-Coin est un serveur medieval axe mini-jeux aujourd'hui, avec un monde survie prevu
+        ensuite. Notre objectif est de melanger ambiance epique et fun accessible: des events,
+        des quetes et une economie utile pour que chaque session soit differente, que tu joues
+        en solo, avec tes amis, avec ta famille ou avec les joueurs connectes.
+      </p>
+    </section>
+
+    <section class="section" data-reveal>
+      <h2>Mini-jeux et activites</h2>
+      <div class="cards">
+        <article class="card">
+          <h3>Parcours et defis</h3>
+          <p>Des parcours pour tester ton skill, progresser et te challenger a chaque connexion.</p>
+        </article>
+        <article class="card">
+          <h3>Loup-Garou et Chat Perche</h3>
+          <p>Des parties dynamiques pour jouer en groupe, trahir, cooperer et rigoler ensemble.</p>
+        </article>
+        <article class="card">
+          <h3>Events annuels</h3>
+          <p>Des evenements speciaux comme Squid Game et HunterXHunter, proposes une fois par an.</p>
+        </article>
+        <article class="card">
+          <h3>Bientot monde survie</h3>
+          <p>Le serveur evolue: un mode survie arrive pour etendre l'aventure au-dela des mini-jeux.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" data-reveal>
+      <h2>Progression et economie</h2>
+      <div class="cards">
+        <article class="card">
+          <h3>Votes quotidiens</h3>
+          <p>Vote pour le serveur et recupere des recompenses chaque jour afin d'avancer plus vite.</p>
+        </article>
+        <article class="card">
+          <h3>Grades evolutifs</h3>
+          <p>Debloque des grades pour gagner en puissance, en visibilite et en richesse sur le serveur.</p>
+        </article>
+        <article class="card">
+          <h3>Monnaie Coin</h3>
+          <p>Gagne des Coins en jouant puis depense-les pour obtenir des items et avantages utiles.</p>
+        </article>
+        <article class="card">
+          <h3>Magasin du site</h3>
+          <p>Achete des Coins via la boutique en ligne (et bientot des cartes cadeaux).</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" data-reveal>
+      <h2>Site et communaute</h2>
+      <div class="cards">
+        <article class="card">
+          <h3>Reglement</h3>
+          <p>Des regles claires pour garder un serveur propre et limiter la triche selon sa gravite.</p>
+        </article>
+        <article class="card">
+          <h3>Personnel</h3>
+          <p>Retrouve l'equipe qui gere le serveur, la moderation et l'evolution du projet.</p>
+        </article>
+        <article class="card">
+          <h3>Discord et assistance</h3>
+          <p>Echange avec la communaute, demande de l'aide et signale un probleme rapidement.</p>
+        </article>
+        <article class="card">
+          <h3>Dons et stickers</h3>
+          <p>Soutiens le developpement du serveur et retrouve prochainement les stickers sur le site.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" data-reveal>
+      <h2>Mini lore</h2>
+      <p>
+        On raconte qu'au-dessus des nuages, les iles de Bloc-Coin n'acceptent que les joueurs
+        assez audacieux pour relever leurs epreuves. Ici, chaque victoire laisse une trace,
+        chaque Coin raconte une histoire.
+      </p>
+      <div class="signature">Bloc-Coin - Ecris ta legende dans les nuages</div>
+      <p class="note">Adresse du serveur: <strong>play.bloccoin.fr</strong></p>
+    </section>
+  </main>
+
+  <script>
+    const communityCounter = document.getElementById('communityCounter');
+    if (communityCounter) {
+      const target = parseInt(communityCounter.dataset.target, 10) || 300;
+      const duration = 1700;
+      const start = performance.now();
+
+      const tick = (now) => {
+        const progress = Math.min((now - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        communityCounter.textContent = Math.round(eased * target).toString();
+        if (progress < 1) {
+          requestAnimationFrame(tick);
+        }
+      };
+
+      requestAnimationFrame(tick);
+    }
+
+    const blocks = document.querySelectorAll('[data-reveal]');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.14 });
+
+    blocks.forEach((block, idx) => {
+      block.style.transitionDelay = (idx * 0.08) + 's';
+      observer.observe(block);
+    });
+  </script>
 </body>
 </html>

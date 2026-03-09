@@ -327,21 +327,12 @@
       padding: 14px 0 20px; gap: 4px;
       overflow: visible;
       /* Transition de glissement */
-      transition: width 0.32s cubic-bezier(0.4, 0, 0.2, 1), background 0.2s, border-color 0.2s;
+      transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
     }
     /* Classe ajoutée par JS pour rétracter */
     .sb-rail.collapsed {
-      width: 0;
-      background: transparent;
-      border-right-color: transparent;
+      transform: translateX(-100%);
     }
-    .sb-rail.collapsed .sb-logo,
-    .sb-rail.collapsed .sb-sep,
-    .sb-rail.collapsed .sb-btn {
-      opacity: 0;
-      pointer-events: none;
-    }
-
     /* ── Bouton flèche sur le bord droit de la rail ── */
     .sb-rail-toggle {
       position: absolute;
