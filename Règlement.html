@@ -2,8 +2,403 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <meta http-equiv="refresh" content="0; url=construction.html?page=Reglement" />
-  <title>Redirection...</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bloc-Coin | Reglement officiel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --gold: #f0c040;
+      --gold-light: #ffe87a;
+      --sky-deep: #060e1f;
+      --text: #e8dcc8;
+      --text-dim: #a49479;
+      --card: rgba(10, 18, 35, 0.88);
+      --line: rgba(240, 192, 64, 0.2);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { min-height: 100%; }
+    body {
+      font-family: 'Crimson Text', Georgia, serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 15% 10%, rgba(240,192,64,0.08), transparent 35%),
+        radial-gradient(circle at 85% 15%, rgba(120,160,255,0.12), transparent 40%),
+        linear-gradient(180deg, #08122a, var(--sky-deep));
+      overflow-x: hidden;
+      line-height: 1.7;
+    }
+
+    .cloud-layer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .cloud {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(38px);
+      opacity: 0.12;
+      animation: drift linear infinite;
+    }
+
+    .cloud:nth-child(1) { width: 420px; height: 140px; top: 8%; left: -28%; background: rgba(170, 204, 255, 0.35); animation-duration: 80s; }
+    .cloud:nth-child(2) { width: 520px; height: 170px; top: 42%; left: -34%; background: rgba(255, 255, 255, 0.2); animation-duration: 115s; animation-delay: -22s; }
+    .cloud:nth-child(3) { width: 380px; height: 120px; top: 72%; left: -24%; background: rgba(240, 192, 64, 0.18); animation-duration: 95s; animation-delay: -45s; }
+
+    .wrap {
+      position: relative;
+      z-index: 1;
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 60px 22px 100px;
+    }
+
+    .hero {
+      border: 1px solid var(--line);
+      background: linear-gradient(140deg, rgba(240,192,64,0.1), transparent 30%), var(--card);
+      padding: 44px 34px;
+      box-shadow: 0 18px 60px rgba(0,0,0,0.45);
+      animation: rise 0.7s ease both;
+      margin-bottom: 26px;
+    }
+
+    .eyebrow {
+      font-family: 'Cinzel', serif;
+      font-size: 0.68rem;
+      letter-spacing: 0.22em;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      font-family: 'Cinzel Decorative', serif;
+      font-size: clamp(2rem, 5.8vw, 3.6rem);
+      line-height: 1.08;
+      margin-bottom: 14px;
+      color: var(--gold);
+    }
+
+    .lead {
+      color: var(--text-dim);
+      font-size: clamp(1rem, 2.1vw, 1.14rem);
+      max-width: 900px;
+      font-style: italic;
+    }
+
+    .intro-list {
+      margin-top: 18px;
+      color: var(--text-dim);
+      padding-left: 20px;
+    }
+
+    .chapter {
+      border: 1px solid var(--line);
+      background: var(--card);
+      margin-top: 18px;
+      padding: 26px 24px;
+      opacity: 0;
+      animation: rise 0.6s ease forwards;
+    }
+
+    .chapter:nth-of-type(2) { animation-delay: 0.06s; }
+    .chapter:nth-of-type(3) { animation-delay: 0.12s; }
+    .chapter:nth-of-type(4) { animation-delay: 0.18s; }
+    .chapter:nth-of-type(5) { animation-delay: 0.24s; }
+    .chapter:nth-of-type(6) { animation-delay: 0.3s; }
+    .chapter:nth-of-type(7) { animation-delay: 0.36s; }
+    .chapter:nth-of-type(8) { animation-delay: 0.42s; }
+    .chapter:nth-of-type(9) { animation-delay: 0.48s; }
+    .chapter:nth-of-type(10) { animation-delay: 0.54s; }
+    .chapter:nth-of-type(11) { animation-delay: 0.6s; }
+    .chapter:nth-of-type(12) { animation-delay: 0.66s; }
+    .chapter:nth-of-type(13) { animation-delay: 0.72s; }
+
+    h2 {
+      font-family: 'Cinzel', serif;
+      color: var(--gold);
+      font-size: 0.98rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 0;
+      cursor: pointer;
+      user-select: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    h2::before {
+      content: '\25B8';
+      color: var(--gold-light);
+      font-size: 0.82rem;
+      line-height: 1;
+      width: 14px;
+      transform: rotate(0deg);
+      transition: transform 0.22s ease;
+    }
+
+    .chapter.open h2::before {
+      transform: rotate(90deg);
+    }
+
+    .rule-list {
+      list-style: none;
+      display: grid;
+      gap: 10px;
+      color: var(--text-dim);
+      margin-top: 0;
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      transition: max-height 0.34s ease, opacity 0.24s ease, margin-top 0.24s ease;
+    }
+
+    .chapter.open .rule-list {
+      margin-top: 12px;
+      max-height: 2200px;
+      opacity: 1;
+    }
+
+    .rule-list li {
+      border-left: 1px solid rgba(240,192,64,0.28);
+      padding-left: 10px;
+    }
+
+    .rule-id {
+      color: var(--gold-light);
+      font-family: 'Cinzel', serif;
+      letter-spacing: 0.08em;
+      font-size: 0.78rem;
+    }
+
+    .footer-note {
+      margin-top: 20px;
+      color: var(--gold-light);
+      font-family: 'Cinzel', serif;
+      letter-spacing: 0.08em;
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      border: 1px solid var(--line);
+      background: rgba(8, 16, 30, 0.7);
+      padding: 16px 18px;
+    }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes drift {
+      from { transform: translateX(0); }
+      to { transform: translateX(calc(100vw + 900px)); }
+    }
+
+    @media (max-width: 800px) {
+      .wrap { padding: 40px 14px 70px; }
+      .hero { padding: 28px 20px; }
+      .chapter { padding: 20px 16px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { animation: none !important; transition: none !important; }
+      .chapter { opacity: 1; }
+    }
+  </style>
 </head>
-<body></body>
+<body>
+  <div class="cloud-layer" aria-hidden="true">
+    <div class="cloud"></div>
+    <div class="cloud"></div>
+    <div class="cloud"></div>
+  </div>
+
+  <main class="wrap">
+    <section class="hero">
+      <div class="eyebrow">Bloc-Coin</div>
+      <h1>Reglement officiel du serveur</h1>
+      <p class="lead">
+        Ce reglement s'applique a l'ensemble des joueurs presents sur le serveur, sans exception.
+        En rejoignant le serveur, l'acceptation de l'integralite de ces regles est automatique.
+        L'ignorance du reglement ne constitue pas une excuse valable en cas de sanction.
+      </p>
+    </section>
+
+    <section class="chapter">
+      <h2>Chapitre 1 - Comportement general</h2>
+      <ul class="rule-list">
+        <li><span class="rule-id">1.1</span> Tout joueur doit faire preuve de respect envers les autres membres, qu'il s'agisse de joueurs, de moderateurs ou d'administrateurs. Les insultes, les moqueries repetees et le harcelement sont strictement interdits.</li>
+        <li><span class="rule-id">1.2</span> Le racisme, la discrimination, la xenophobie, l'homophobie et toute forme de propos haineux entraineront une exclusion immediate et permanente du serveur, sans avertissement prealable.</li>
+        <li><span class="rule-id">1.3</span> Le harcelement cible d'un joueur, que ce soit en jeu, dans le chat ou sur les reseaux sociaux en rapport avec le serveur, est interdit et passible d'un bannissement definitif.</li>
+        <li><span class="rule-id">1.4</span> Il est interdit d'usurper l'identite d'un autre joueur, d'un membre du staff ou d'une personnalite publique, que ce soit via un pseudo similaire ou un comportement trompeur.</li>
+        <li><span class="rule-id">1.5</span> Les menaces, meme formulees a titre de plaisanterie, sont prohibees. Cela inclut les menaces de DDoS, de doxxing ou de toute autre forme d'agression physique ou numerique.</li>
+        <li><span class="rule-id">1.6</span> Le spam est interdit. Envoyer le meme message plusieurs fois de suite, flood le chat ou utiliser des caracteres repetitifs de maniere abusive est sanctionnable.</li>
+        <li><span class="rule-id">1.7</span> La publicite pour d'autres serveurs Minecraft, Discord ou communautes exterieures est strictement interdite, que ce soit dans le chat public, en message prive ou en vocal.</li>
+        <li><span class="rule-id">1.8</span> Tout contenu a caractere sexuel, gore ou explicitement choquant est interdit sur l'ensemble du serveur, y compris chat, constructions, noms d'objets et skins.</li>
+        <li><span class="rule-id">1.9</span> Les discussions relatives a la politique, a la religion ou a d'autres sujets sensibles sont deconseillees et peuvent etre interrompues par le staff a tout moment si elles degenerent.</li>
+      </ul>
+    </section>
+
+    <section class="chapter">
+      <h2>Chapitre 2 - Regles du chat</h2>
+      <ul class="rule-list">
+        <li><span class="rule-id">2.1</span> Le chat doit rester lisible et agreable pour tous. Les messages en majuscules excessifs sont interdits.</li>
+        <li><span class="rule-id">2.2</span> La langue principale du serveur est le francais. Dans les salons ou chats dedies a d'autres langues, cette regle peut ne pas s'appliquer.</li>
+        <li><span class="rule-id">2.3</span> Il est interdit de partager des liens externes sans l'accord d'un membre du staff, a l'exception des liens vers des ressources officiellement approuvees par le serveur.</li>
+        <li><span class="rule-id">2.4</span> Le partage d'informations personnelles concernant d'autres joueurs, adresse IP, localisation reelle, numero de telephone et similaires, est formellement interdit et constitue un motif de bannissement immediat.</li>
+        <li><span class="rule-id">2.5</span> Les pseudonymes ou noms de builds contenant des insultes, des references sexuelles ou des propos haineux ne sont pas toleres.</li>
+        <li><span class="rule-id">2.6</span> L'utilisation de la commande /msg ou des messages prives pour harceler d'autres joueurs est soumise aux memes regles que le chat public.</li>
+      </ul>
+    </section>
+
+    <section class="chapter">
+      <h2>Chapitre 3 - PvP</h2>
+      <ul class="rule-list">
+        <li><span class="rule-id">3.1</span> Le PvP est autorise uniquement dans les zones prevues a cet effet, arenes, zones de combat et mini-jeux PvP. Attaquer un joueur en dehors de ces zones est interdit sauf accord mutuel explicite.</li>
+        <li><span class="rule-id">3.2</span> Le kill farming, c'est-a-dire tuer un meme joueur de maniere repetee et intentionnelle pour accumuler des points ou le faire regresser, est interdit.</li>
+        <li><span class="rule-id">3.3</span> Le camping abusif d'une zone de spawn ou d'un point de reapparition afin d'eliminer des joueurs qui viennent de mourir est interdit.</li>
+        <li><span class="rule-id">3.4</span> Toute forme de triche en PvP est bannie, KillAura, AimBot, AntiKnockback, FastHit, Reach ou tout autre mod ou client offrant un avantage injuste au combat.</li>
+        <li><span class="rule-id">3.5</span> Il est interdit d'attirer intentionnellement un joueur hors d'une zone securisee pour l'attaquer.</li>
+        <li><span class="rule-id">3.6</span> Dans les modes PvP organises, tournois et duels classes, quitter volontairement la partie pour eviter une defaite est sanctionnable et peut entrainer une perte de classement forcee.</li>
+      </ul>
+    </section>
+
+    <section class="chapter">
+      <h2>Chapitre 4 - Mode survie</h2>
+      <ul class="rule-list">
+        <li><span class="rule-id">4.1</span> Il est interdit de detruire, voler ou modifier la base, les constructions ou les biens d'un autre joueur sans son autorisation explicite. Cela inclut les fermes, les mines et les coffres.</li>
+        <li><span class="rule-id">4.2</span> Le vol dans les coffres non proteges reste interdit, meme en l'absence de protection physique. L'absence de cadenas ne constitue pas une autorisation de prendre les ressources d'autrui.</li>
+        <li><span class="rule-id">4.3</span> Il est interdit de pieger intentionnellement la base ou le chemin menant a la base d'un autre joueur, TNT, lave, puits, portails pieges et similaires, sans accord prealable.</li>
+        <li><span class="rule-id">4.4</span> La destruction de l'environnement de jeu de maniere non esthetique ou malveillante est interdite, arbres a moitie coupes, trous au milieu du spawn, zones criblees de galeries a la surface, etc.</li>
+        <li><span class="rule-id">4.5</span> Il est interdit de construire a moins de 100 blocs de la base d'un autre joueur sans son accord ecrit ou verbal obtenu en presence d'un membre du staff.</li>
+        <li><span class="rule-id">4.6</span> Les machines generant un lag serveur important, fermes d'entites non optimisees, boucles de redstone infinies, spawners empiles et similaires, sont interdites. Le staff peut supprimer sans preavis toute installation jugee trop lourde pour le serveur.</li>
+        <li><span class="rule-id">4.7</span> L'utilisation de bugs ou d'exploits du jeu, duplication d'objets, passage a travers les murs, glitchs d'inventaire et similaires, est formellement interdite et entraine une sanction immediate.</li>
+        <li><span class="rule-id">4.8</span> Il est interdit d'utiliser des alt-comptes pour contourner une sanction, obtenir des ressources supplementaires ou avantager illegitimement un joueur ou une alliance.</li>
+      </ul>
+    </section>
+
+    <section class="chapter">
+      <h2>Chapitre 5 - Mini-jeux</h2>
+      <ul class="rule-list">
+        <li><span class="rule-id">5.1</span> Dans tous les mini-jeux, il est interdit d'utiliser des bugs de map pour se retrouver en dehors des zones de jeu prevues ou pour obtenir un avantage non intentionnel.</li>
+        <li><span class="rule-id">5.2</span> L'abandon intentionnel et repete d'une partie en cours pour penaliser son equipe ou pour eviter une defaite est interdit et sanctionnable.</li>
+        <li><span class="rule-id">5.3</span> Il est interdit de s'organiser avec des joueurs de l'equipe adverse dans des mini-jeux de type FFA ou competitifs a equipes, sauf si le mode de jeu le prevoit explicitement.</li>
+        <li><span class="rule-id">5.4</span> Dans les mini-jeux en equipe, le sabotage de sa propre equipe, friendly fire intentionnel, blocage des coequipiers, destruction des structures alliees, est formellement interdit.</li>
+        <li><span class="rule-id">5.5</span> L'AFK delibere pendant une partie de mini-jeu pour ne pas etre penalise d'une defaite est interdit. Les joueurs AFK trop longtemps peuvent etre expulses de la partie par le systeme ou par le staff.</li>
+        <li><span class="rule-id">5.6</span> Toute tentative de manipulation du systeme de recompenses ou du classement d'un mini-jeu, boost artificiel, arrangements avec d'autres joueurs pour simuler des parties, est consideree comme de la triche et entraine un reset du profil.</li>
+      </ul>
+    </section>
+
+    <section class="chapter">
+      <h2>Chapitre 6 - Modifications client et triche</h2>
+      <ul class="rule-list">
+        <li><span class="rule-id">6.1</span> L'utilisation de tout client modifie, hack client ou cheat offrant un avantage non legitime est formellement interdite. Cela inclut notamment KillAura, ESP, Wallhack, X-Ray, Speed, Fly, NoFall, AutoClicker et tout mod similaire.</li>
+        <li><span class="rule-id">6.2</span> Les mods autorises incluent Optifine, Sodium, Iris, minimap sans affichage des joueurs ou entites, shaders purement visuels, mods d'interface et mods de statistiques de performance.</li>
+        <li><span class="rule-id">6.3</span> En cas de doute sur la legitimite d'un mod, il convient de demander l'avis d'un membre du staff avant de l'utiliser. L'utilisation d'un mod non approuve reste sous la responsabilite du joueur.</li>
+        <li><span class="rule-id">6.4</span> Les macros clavier ou scripts permettant d'automatiser des actions repetitives, clic automatique, click drag, butterfly click a tres haute frequence, peuvent etre consideres comme de la triche selon le contexte.</li>
+        <li><span class="rule-id">6.5</span> Il est interdit de partager, recommander ou vendre des cheats a d'autres joueurs du serveur.</li>
+        <li><span class="rule-id">6.6</span> Un joueur suspecte de triche peut etre soumis a un controle par le staff. Le refus de cooperer sera interprete comme un aveu de culpabilite et entrainera un bannissement.</li>
+      </ul>
+    </section>
+
+    <section class="chapter">
+      <h2>Chapitre 7 - Constructions et terrain</h2>
+      <ul class="rule-list">
+        <li><span class="rule-id">7.1</span> Les constructions a caractere offensant, obscene, raciste ou provocateur sont interdites et seront supprimees par le staff sans preavis ni compensation.</li>
+        <li><span class="rule-id">7.2</span> Il est interdit de construire dans les zones reservees au staff, aux evenements ou a l'equipe de construction du serveur.</li>
+        <li><span class="rule-id">7.3</span> Tout joueur qui abandonne une construction de maniere permanente, compte inactif depuis plus de 30 jours, s'expose a voir son terrain recupere par le staff afin de liberer l'espace pour d'autres joueurs.</li>
+        <li><span class="rule-id">7.4</span> Les griefs ou constructions visant a nuire a l'esthetique ou a la jouabilite du serveur, murs de cobblestone interminables, constructions bouchon au milieu des routes, sont interdits.</li>
+      </ul>
+    </section>
+
+    <section class="chapter">
+      <h2>Chapitre 8 - Relations avec le staff</h2>
+      <ul class="rule-list">
+        <li><span class="rule-id">8.1</span> Les membres du staff, moderateurs, administrateurs, helpers, doivent etre respectes au meme titre que les autres joueurs, voire davantage dans l'exercice de leurs fonctions.</li>
+        <li><span class="rule-id">8.2</span> Il est interdit de harceler, spammer ou insulter un membre du staff pour obtenir des privileges, contester une sanction ou obtenir des informations confidentielles.</li>
+        <li><span class="rule-id">8.3</span> Les decisions prises par le staff sont definitives dans l'immediat. Si une sanction est estimee injuste, un recours peut etre soumis via le canal officiel prevu a cet effet, forum, Discord, ticket, uniquement de maniere respectueuse et constructive.</li>
+        <li><span class="rule-id">8.4</span> Se faire passer pour un membre du staff ou pretendre disposer de pouvoirs d'administration est strictement interdit.</li>
+        <li><span class="rule-id">8.5</span> Toute tentative de corruption d'un membre du staff, proposer des cadeaux en jeu, de l'argent reel ou d'autres avantages en echange d'un traitement de faveur, est interdite et entraine un bannissement immediat.</li>
+        <li><span class="rule-id">8.6</span> Les signalements de joueurs suspects ou de comportements problematiques doivent etre effectues via les canaux officiels, commande /report, ticket Discord, etc., et non dans le chat public.</li>
+      </ul>
+    </section>
+
+    <section class="chapter">
+      <h2>Chapitre 9 - Economie et echanges</h2>
+      <ul class="rule-list">
+        <li><span class="rule-id">9.1</span> Les arnaques entre joueurs, proposer un echange et ne pas l'honorer, vendre un objet different de celui annonce, sont interdites et sanctionnables. Le staff peut intervenir en cas de preuve suffisante.</li>
+        <li><span class="rule-id">9.2</span> Il est interdit de vendre, d'acheter ou d'echanger des objets, des rangs ou des ressources du jeu contre de la monnaie reelle sans autorisation explicite de l'administration.</li>
+        <li><span class="rule-id">9.3</span> Les prix abusifs dans les marches ou shops joueurs, visant a nuire deliberement a l'economie du serveur, peuvent etre sanctionnes a la discretion du staff.</li>
+        <li><span class="rule-id">9.4</span> L'exploitation de failles economiques, duplication, abus d'un bug de shop et similaires, est assimilee a de la triche et sera sanctionnee en consequence, y compris par une confiscation des ressources obtenues illegitimement.</li>
+      </ul>
+    </section>
+
+    <section class="chapter">
+      <h2>Chapitre 10 - Securite et vie privee</h2>
+      <ul class="rule-list">
+        <li><span class="rule-id">10.1</span> Il est strictement interdit de tenter de pirater, d'acceder ou de compromettre les comptes d'autres joueurs, quel que soit le moyen utilise.</li>
+        <li><span class="rule-id">10.2</span> Toute tentative de DDoS, saturation de serveur, d'attaque reseau ou de destabilisation de l'infrastructure du serveur entraine un bannissement definitif et peut faire l'objet d'un signalement aux autorites competentes.</li>
+        <li><span class="rule-id">10.3</span> Il est interdit de diffuser des informations personnelles concernant un autre joueur, notamment son adresse, son numero de telephone, ses photos ou tout autre element permettant de l'identifier hors du jeu. Cette pratique, doxxing, est une violation grave passible de poursuites judiciaires.</li>
+        <li><span class="rule-id">10.4</span> Les liens de phishing, les fichiers malveillants ou tout contenu visant a nuire a la securite informatique des joueurs sont formellement interdits et entrainent un bannissement immediat.</li>
+      </ul>
+    </section>
+
+    <section class="chapter">
+      <h2>Chapitre 11 - Sanctions</h2>
+      <ul class="rule-list">
+        <li><span class="rule-id">11.1</span> Les sanctions appliquees sur le serveur sont les suivantes, dans un ordre croissant de gravite: avertissement verbal, mute temporaire, kick, ban temporaire, ban definitif.</li>
+        <li><span class="rule-id">11.2</span> La severite de la sanction est laissee a l'appreciation du staff selon la gravite de l'infraction, les antecedents du joueur et le contexte. Les sanctions ne sont pas necessairement progressives pour les infractions graves.</li>
+        <li><span class="rule-id">11.3</span> Tout joueur banni peut soumettre un appel motive via le serveur Discord officiel dans un delai de 14 jours suivant la sanction. Au-dela de ce delai, l'appel ne sera plus recevable.</li>
+        <li><span class="rule-id">11.4</span> Les tentatives de contournement d'un ban, utilisation d'un autre compte, d'un VPN ou de toute autre methode, entraineront l'extension de la sanction initiale et le bannissement du compte alternatif.</li>
+        <li><span class="rule-id">11.5</span> Le staff se reserve le droit de modifier, alleger ou aggraver une sanction a tout moment si de nouveaux elements sont portes a sa connaissance.</li>
+      </ul>
+    </section>
+
+    <section class="chapter">
+      <h2>Chapitre 12 - Dispositions finales</h2>
+      <ul class="rule-list">
+        <li><span class="rule-id">12.1</span> Ce reglement est susceptible d'etre modifie a tout moment par l'administration du serveur. Les joueurs seront informes des mises a jour via le Discord officiel ou l'annonce en jeu.</li>
+        <li><span class="rule-id">12.2</span> L'administration se reserve le droit de prendre des decisions non couvertes explicitement par ce reglement si elle juge qu'un comportement est nuisible pour la communaute, dans l'esprit general de ce document.</li>
+        <li><span class="rule-id">12.3</span> Ce reglement s'applique egalement en dehors du jeu si les comportements constates ont un lien direct avec le serveur, reseaux sociaux, Discord officiel, forums, etc.</li>
+        <li><span class="rule-id">12.4</span> En rejoignant le serveur, chaque joueur reconnait avoir pris connaissance de l'integralite de ce reglement et s'engage a le respecter.</li>
+      </ul>
+    </section>
+
+    <div class="footer-note">Derniere mise a jour : 2026 - Administration du serveur</div>
+  </main>
+
+  <script>
+    const chapters = document.querySelectorAll('.chapter');
+
+    chapters.forEach((chapter) => {
+      const title = chapter.querySelector('h2');
+      if (!title) {
+        return;
+      }
+
+      title.setAttribute('role', 'button');
+      title.setAttribute('tabindex', '0');
+      title.setAttribute('aria-expanded', chapter.classList.contains('open') ? 'true' : 'false');
+
+      const toggleChapter = () => {
+        chapter.classList.toggle('open');
+        title.setAttribute('aria-expanded', chapter.classList.contains('open') ? 'true' : 'false');
+      };
+
+      title.addEventListener('click', toggleChapter);
+      title.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          toggleChapter();
+        }
+      });
+    });
+  </script>
+</body>
 </html>
