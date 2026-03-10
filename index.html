@@ -104,6 +104,137 @@
     }
     .nav-cta-group { display: flex; gap: 8px; }
 
+    #zone-compte { display: none; position: relative; }
+    #pseudo-affiche {
+      font-family: 'Cinzel', serif; font-size: 0.78rem; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--text);
+      background: transparent;
+      border: 1px solid rgba(232,220,200,0.3);
+      padding: 10px 16px;
+      cursor: pointer;
+      clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+      transition: border-color 0.3s, color 0.3s, transform 0.2s;
+    }
+    #pseudo-affiche:hover { border-color: var(--gold); color: var(--gold); transform: translateY(-1px); }
+    #menu-compte {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      background: rgba(10,18,35,0.96);
+      border: 1px solid rgba(240,192,64,0.22);
+      min-width: 180px;
+      display: none;
+      z-index: 120;
+      box-shadow: 0 12px 36px rgba(0,0,0,0.45);
+    }
+    #menu-compte.actif { display: block; }
+    .menu-item {
+      display: block;
+      width: 100%;
+      text-align: left;
+      border: 0;
+      background: transparent;
+      color: var(--text);
+      font-family: 'Cinzel', serif;
+      font-size: 0.68rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 11px 12px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .menu-item:hover { background: rgba(240,192,64,0.08); }
+    .menu-item.danger { color: #e7a6a6; }
+
+    #auth-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(2,6,14,0.78);
+      backdrop-filter: blur(5px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    #auth-overlay.actif { display: flex; }
+    .auth-carte {
+      width: min(460px, 100%);
+      border: 1px solid rgba(240,192,64,0.22);
+      background: rgba(10,18,35,0.97);
+      box-shadow: 0 24px 80px rgba(0,0,0,.7);
+      overflow: hidden;
+      animation: fadeUp .22s ease both;
+    }
+    .auth-entete { padding: 22px 22px 0; display: flex; align-items: center; justify-content: space-between; }
+    .auth-titre { font-family: 'Cinzel', serif; color: var(--gold); letter-spacing: 0.12em; font-size: 0.9rem; text-transform: uppercase; }
+    #auth-fermer {
+      background: none; border: 0; color: var(--text-dim); font-size: 1.3rem; cursor: pointer;
+    }
+    #auth-fermer:hover { color: var(--text); }
+    .onglets {
+      display: flex;
+      margin: 16px 22px 0;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 4px;
+      gap: 4px;
+    }
+    [data-onglet] {
+      flex: 1;
+      border: 0;
+      background: transparent;
+      color: var(--text-dim);
+      font-family: 'Cinzel', serif;
+      font-size: 0.68rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 8px;
+      cursor: pointer;
+    }
+    [data-onglet].actif { background: rgba(240,192,64,0.12); color: var(--gold-light); }
+    .auth-corps { padding: 18px 22px 22px; }
+    [data-panneau] { display: none; }
+    [data-panneau].actif { display: block; }
+    .btn-google {
+      width: 100%; border: 1px solid rgba(255,255,255,0.14); background: rgba(255,255,255,0.03);
+      color: var(--text); font-family: 'Cinzel', serif; font-size: 0.72rem; letter-spacing: 0.08em;
+      text-transform: uppercase; padding: 10px; cursor: pointer; margin-bottom: 14px;
+    }
+    .btn-google:hover { border-color: rgba(240,192,64,0.35); }
+    .separateur {
+      display: flex; align-items: center; gap: 10px; color: var(--text-dim); font-size: 0.74rem; margin-bottom: 12px;
+    }
+    .separateur::before, .separateur::after { content: ''; height: 1px; flex: 1; background: rgba(255,255,255,0.1); }
+    .champ-groupe { margin-bottom: 12px; }
+    .champ-groupe label {
+      display: block; font-family: 'Cinzel', serif; font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--text-dim); margin-bottom: 6px;
+    }
+    .champ-groupe input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.03);
+      color: var(--text);
+      font-family: 'Crimson Text', Georgia, serif;
+      font-size: 0.95rem;
+      outline: none;
+    }
+    .champ-groupe input:focus { border-color: rgba(240,192,64,0.45); box-shadow: 0 0 0 2px rgba(240,192,64,0.12); }
+    .grille-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .btn-soumettre {
+      width: 100%; border: 0; padding: 12px;
+      background: linear-gradient(135deg, var(--gold-light), var(--gold));
+      color: var(--sky-deep); font-family: 'Cinzel', serif; font-size: 0.72rem; letter-spacing: 0.1em;
+      text-transform: uppercase; font-weight: 700; cursor: pointer;
+    }
+    .btn-soumettre:disabled { opacity: 0.6; cursor: not-allowed; }
+    [id^="err-"] {
+      display: none; margin-top: 10px; padding: 9px 10px; border: 1px solid rgba(255,77,77,0.25);
+      background: rgba(255,77,77,0.08); color: #ff9e9e; font-size: 0.85rem;
+    }
+
     /* ── HERO ── */
     .hero {
       position: relative; min-height: 100vh;
@@ -510,7 +641,14 @@
   </ul>
   <div class="nav-cta-group">
     <button class="nav-cta" onclick="document.getElementById('join').scrollIntoView({behavior:'smooth'})">Jouer</button>
-    <button class="nav-cta nav-cta-secondary" onclick="document.getElementById('join').scrollIntoView({behavior:'smooth'})">Se connecter</button>
+    <button class="nav-cta nav-cta-secondary" id="btn-connexion">Se connecter</button>
+    <div id="zone-compte">
+      <button id="pseudo-affiche"></button>
+      <div id="menu-compte">
+        <button class="menu-item">Mon profil</button>
+        <button class="menu-item danger" id="btn-deconnexion">Deconnexion</button>
+      </div>
+    </div>
   </div>
 </nav>
 
@@ -665,6 +803,75 @@
 
 <div class="toast" id="toast">✓ &nbsp; IP copiée dans le presse-papiers !</div>
 
+<div id="auth-overlay">
+  <div class="auth-carte" role="dialog" aria-modal="true" aria-label="Authentification">
+    <div class="auth-entete">
+      <span class="auth-titre">Espace joueur</span>
+      <button id="auth-fermer" aria-label="Fermer">×</button>
+    </div>
+    <div class="onglets" role="tablist">
+      <button data-onglet="connexion" class="actif" role="tab" aria-selected="true">Connexion</button>
+      <button data-onglet="inscription" role="tab" aria-selected="false">Creer un compte</button>
+    </div>
+
+    <div class="auth-corps">
+      <div data-panneau="connexion" class="actif">
+        <button class="btn-google" data-google-auth>Continuer avec Google</button>
+        <div class="separateur">ou par email</div>
+        <form id="form-connexion" novalidate>
+          <div class="champ-groupe">
+            <label for="cx-email">Adresse email</label>
+            <input id="cx-email" type="email" placeholder="toi@exemple.fr" required autocomplete="email" />
+          </div>
+          <div class="champ-groupe">
+            <label for="cx-mdp">Mot de passe</label>
+            <input id="cx-mdp" type="password" placeholder="********" required autocomplete="current-password" />
+          </div>
+          <button type="submit" class="btn-soumettre" data-label="Se connecter">Se connecter</button>
+          <div id="err-connexion" role="alert"></div>
+        </form>
+      </div>
+
+      <div data-panneau="inscription">
+        <button class="btn-google" data-google-auth>Continuer avec Google</button>
+        <div class="separateur">ou avec un email</div>
+        <form id="form-inscription" novalidate>
+          <div class="grille-2">
+            <div class="champ-groupe">
+              <label for="ins-pseudo">Pseudo site</label>
+              <input id="ins-pseudo" type="text" placeholder="CreeperKiller" required minlength="3" />
+            </div>
+            <div class="champ-groupe">
+              <label for="ins-mc">Pseudo Minecraft</label>
+              <input id="ins-mc" type="text" placeholder="Steve_42" required />
+            </div>
+          </div>
+          <div class="champ-groupe">
+            <label for="ins-nom">Nom et prenom</label>
+            <input id="ins-nom" type="text" placeholder="Jean Dupont" required />
+          </div>
+          <div class="champ-groupe">
+            <label for="ins-email">Adresse email</label>
+            <input id="ins-email" type="email" placeholder="toi@exemple.fr" required autocomplete="email" />
+          </div>
+          <div class="grille-2">
+            <div class="champ-groupe">
+              <label for="ins-mdp">Mot de passe</label>
+              <input id="ins-mdp" type="password" placeholder="********" required minlength="6" autocomplete="new-password" />
+            </div>
+            <div class="champ-groupe">
+              <label for="ins-mdp-confirm">Confirmation</label>
+              <input id="ins-mdp-confirm" type="password" placeholder="********" required autocomplete="new-password" />
+            </div>
+          </div>
+          <button type="submit" class="btn-soumettre" data-label="Creer mon compte">Creer mon compte</button>
+          <div id="err-inscription" role="alert"></div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
   /* ── STARS ── */
   const canvas = document.getElementById('sky-canvas');
@@ -738,7 +945,7 @@
     accueil: { ico:'🏠', ttl:'Accueil', pages:[
       {ico:'📄',lbl:'Présentation',file:'Présentation.html'},
       {ico:'🖼️',lbl:'Ingarurik',file:'https://sites.google.com/view/ingarurik'},
-      {ico:'🎬',lbl:'Diaporama',file:'Diaporama.html'},
+      {ico:'🎬',lbl:'Diaporama',file:'Diaporama.html',badge:'A Venir'},
       {ico:'🔗',lbl:'Réseaux sociaux',file:'réseaux-sociaux.html'},
     ]},
     serveur: { ico:'⚙️', ttl:'Serveur', pages:[
@@ -746,7 +953,7 @@
       {ico:'📜',lbl:'Règlement',file:'Règlement.html'},
       {ico:'👥',lbl:'Personnel',file:'Personnel.html'},
       {ico:'🏆',lbl:'Grades',file:'Grades.html'},
-      {ico:'💎',lbl:'Dons',file:'Dons.html',badge:'Nouveau'},
+      {ico:'💎',lbl:'Dons',file:'Dons.html',badge:'A Venir'},
       {ico:'🗳️',lbl:'Vote',file:'Vote.html'},
       {ico:'🏪',lbl:'Magasin',file:'Magasin.html'},
       {ico:'💬',lbl:'Discord',file:'Discord.html'},
@@ -877,5 +1084,9 @@
     }
   });
 </script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
 </body>
 </html>
+
+/*je veut un systeme de vote ou les joueur peuvent voter toute les 1h, et toute les 3h, pour recevoir des recompense en jeu, je veut un systeme qui verifie que les joueur sois pas des robot, avec un captcha et tout, et aussi je veut que sa enpeche au joueur de voter plusieur fois avant les 1 ou 3 heure, par exmeple en recuperent son ip ou quoi tu sais comme sa il ne peut pas actualiser la page*/

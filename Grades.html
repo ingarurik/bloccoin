@@ -2,8 +2,844 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <meta http-equiv="refresh" content="0; url=construction.html?page=Grades" />
-  <title>Redirection...</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bloc-Coin | Grades du serveur</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --gold: #f0c040;
+      --gold-light: #ffe87a;
+      --sky-deep: #060e1f;
+      --text: #e8dcc8;
+      --text-dim: #a49479;
+      --card: rgba(10, 18, 35, 0.88);
+      --line: rgba(240, 192, 64, 0.2);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    html, body { min-height: 100%; }
+    body {
+      font-family: 'Crimson Text', Georgia, serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 15% 10%, rgba(240,192,64,0.08), transparent 35%),
+        radial-gradient(circle at 85% 15%, rgba(120,160,255,0.12), transparent 40%),
+        linear-gradient(180deg, #08122a, var(--sky-deep));
+      overflow-x: hidden;
+      line-height: 1.7;
+    }
+
+    .cloud-layer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .cloud {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(38px);
+      opacity: 0.12;
+      animation: drift linear infinite;
+    }
+
+    .cloud:nth-child(1) { width: 420px; height: 140px; top: 8%; left: -28%; background: rgba(170, 204, 255, 0.35); animation-duration: 80s; }
+    .cloud:nth-child(2) { width: 520px; height: 170px; top: 42%; left: -34%; background: rgba(255, 255, 255, 0.2); animation-duration: 115s; animation-delay: -22s; }
+    .cloud:nth-child(3) { width: 380px; height: 120px; top: 72%; left: -24%; background: rgba(240, 192, 64, 0.18); animation-duration: 95s; animation-delay: -45s; }
+
+    .wrap {
+      position: relative;
+      z-index: 1;
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 56px 20px 90px;
+    }
+
+    .hero {
+      border: 1px solid var(--line);
+      background: linear-gradient(140deg, rgba(240,192,64,0.1), transparent 30%), var(--card);
+      padding: 42px 30px;
+      box-shadow: 0 18px 60px rgba(0,0,0,0.45);
+      animation: rise 0.7s ease both;
+      margin-bottom: 20px;
+    }
+
+    .eyebrow {
+      font-family: 'Cinzel', serif;
+      font-size: 0.66rem;
+      letter-spacing: 0.24em;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      font-family: 'Cinzel Decorative', serif;
+      font-size: clamp(1.9rem, 6vw, 3.6rem);
+      line-height: 1.08;
+      margin-bottom: 12px;
+      color: var(--gold);
+    }
+
+    .lead {
+      color: var(--text-dim);
+      font-size: clamp(1rem, 2vw, 1.18rem);
+      max-width: 820px;
+      font-style: italic;
+    }
+
+    .search-box {
+      border: 1px solid var(--line);
+      background: var(--card);
+      padding: 20px;
+      margin-bottom: 18px;
+      animation: rise 0.7s ease both;
+      animation-delay: 0.08s;
+    }
+
+    .search-label {
+      display: block;
+      font-family: 'Cinzel', serif;
+      font-size: 0.7rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 8px;
+    }
+
+    .search-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+    }
+
+    #gradeSearch {
+      width: 100%;
+      background: rgba(8, 16, 30, 0.9);
+      border: 1px solid rgba(255,255,255,0.14);
+      color: var(--text);
+      padding: 12px 14px;
+      font-family: 'Cinzel', serif;
+      letter-spacing: 0.04em;
+      outline: none;
+    }
+
+    #gradeSearch:focus {
+      border-color: rgba(240,192,64,0.45);
+      box-shadow: 0 0 0 2px rgba(240,192,64,0.12);
+    }
+
+    #searchBtn {
+      border: 1px solid rgba(240,192,64,0.45);
+      background: rgba(240,192,64,0.12);
+      color: var(--gold-light);
+      font-family: 'Cinzel', serif;
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0 16px;
+      cursor: pointer;
+      transition: background 0.22s ease;
+    }
+
+    #searchBtn:hover { background: rgba(240,192,64,0.2); }
+
+    .results {
+      margin-top: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      min-height: 28px;
+    }
+
+    .result-btn {
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.03);
+      color: var(--text);
+      font-family: 'Cinzel', serif;
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 8px 10px;
+      cursor: pointer;
+      transition: border-color 0.2s ease, transform 0.2s ease;
+    }
+
+    .result-btn:hover {
+      border-color: rgba(240,192,64,0.38);
+      transform: translateY(-2px);
+    }
+
+    .grade-item {
+      border: 1px solid var(--line);
+      background: var(--card);
+      margin-top: 14px;
+      padding: 20px;
+      opacity: 0;
+      animation: rise 0.62s ease forwards;
+      scroll-margin-top: 80px;
+    }
+
+    .grade-item:nth-of-type(3) { animation-delay: 0.14s; }
+    .grade-item:nth-of-type(4) { animation-delay: 0.2s; }
+    .grade-item:nth-of-type(5) { animation-delay: 0.26s; }
+    .grade-item:nth-of-type(6) { animation-delay: 0.32s; }
+    .grade-item:nth-of-type(7) { animation-delay: 0.38s; }
+
+    .grade-title {
+      font-family: 'Cinzel', serif;
+      color: var(--gold);
+      font-size: 0.95rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 0;
+      cursor: pointer;
+      user-select: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .grade-title::before {
+      content: '\25B8';
+      color: var(--gold-light);
+      font-size: 0.82rem;
+      line-height: 1;
+      width: 14px;
+      transform: rotate(0deg);
+      transition: transform 0.22s ease;
+    }
+
+    .grade-item.open .grade-title::before { transform: rotate(90deg); }
+
+    .grade-content {
+      margin-top: 0;
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease, opacity 0.22s ease, margin-top 0.22s ease;
+    }
+
+    .grade-item.open .grade-content {
+      margin-top: 12px;
+      opacity: 1;
+    }
+
+    .grade-rank {
+      font-family: 'Cinzel', serif;
+      color: var(--gold-light);
+      letter-spacing: 0.08em;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .grade-stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .grade-stats.has-duration {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .stat-card {
+      border: 1px solid rgba(240,192,64,0.25);
+      background: rgba(8, 16, 30, 0.72);
+      padding: 10px 12px;
+    }
+
+    .stat-label {
+      display: block;
+      font-family: 'Cinzel', serif;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 0.6rem;
+      color: var(--text-dim);
+      margin-bottom: 4px;
+    }
+
+    .stat-value {
+      display: block;
+      font-family: 'Cinzel', serif;
+      letter-spacing: 0.06em;
+      font-size: 0.78rem;
+      color: var(--gold-light);
+      text-transform: uppercase;
+    }
+
+    .cmd-btn {
+      border: 1px solid rgba(240,192,64,0.45);
+      background: rgba(240,192,64,0.12);
+      color: var(--gold-light);
+      font-family: 'Cinzel', serif;
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 10px 14px;
+      cursor: pointer;
+      transition: background 0.22s ease, transform 0.2s ease;
+    }
+
+    .cmd-btn:hover {
+      background: rgba(240,192,64,0.2);
+      transform: translateY(-2px);
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      background: rgba(3, 8, 18, 0.72);
+      backdrop-filter: blur(6px);
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.22s ease, visibility 0.22s ease;
+    }
+
+    .modal.open {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+
+    .modal-card {
+      width: min(760px, 100%);
+      border: 1px solid var(--line);
+      background: rgba(7, 15, 30, 0.97);
+      box-shadow: 0 20px 70px rgba(0,0,0,0.5);
+      padding: 22px;
+      transform: translateY(10px) scale(0.98);
+      opacity: 0;
+      transition: transform 0.22s ease, opacity 0.22s ease;
+    }
+
+    .modal.open .modal-card {
+      transform: translateY(0) scale(1);
+      opacity: 1;
+    }
+
+    .modal.closing {
+      opacity: 0;
+      visibility: visible;
+      pointer-events: none;
+    }
+
+    .modal.closing .modal-card {
+      transform: translateY(10px) scale(0.98);
+      opacity: 0;
+    }
+
+    .modal-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .modal-title {
+      font-family: 'Cinzel', serif;
+      color: var(--gold);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-size: 0.9rem;
+    }
+
+    .modal-close {
+      border: 1px solid rgba(255,255,255,0.2);
+      background: transparent;
+      color: var(--text);
+      width: 30px;
+      height: 30px;
+      cursor: pointer;
+      font-size: 1rem;
+      line-height: 1;
+    }
+
+    .cmd-list {
+      list-style: none;
+      display: grid;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .cmd-list li {
+      border-left: 1px solid rgba(240,192,64,0.35);
+      padding-left: 10px;
+      color: var(--text-dim);
+      word-break: break-word;
+    }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes drift {
+      from { transform: translateX(0); }
+      to { transform: translateX(calc(100vw + 900px)); }
+    }
+
+    @media (max-width: 860px) {
+      .wrap { padding: 40px 14px 70px; }
+      .hero { padding: 28px 20px; }
+      .search-box, .grade-item { padding: 16px; }
+      .search-row { grid-template-columns: 1fr; }
+      #searchBtn { padding: 11px 12px; }
+      .grade-stats { grid-template-columns: 1fr; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { animation: none !important; transition: none !important; }
+      .grade-item { opacity: 1; }
+    }
+  </style>
 </head>
-<body></body>
+<body>
+  <div class="cloud-layer" aria-hidden="true">
+    <div class="cloud"></div>
+    <div class="cloud"></div>
+    <div class="cloud"></div>
+  </div>
+
+  <main class="wrap">
+    <section class="hero">
+      <div class="eyebrow">Bloc-Coin</div>
+      <h1>Grades du serveur</h1>
+      <p class="lead">
+        Retrouvez chaque grade, sa description, et la liste complete des commandes disponibles.
+      </p>
+    </section>
+
+    <section class="search-box">
+      <label class="search-label" for="gradeSearch">Rechercher un grade</label>
+      <div class="search-row">
+        <input id="gradeSearch" type="text" placeholder="Ex: artisan" autocomplete="off" />
+        <button id="searchBtn" type="button">Chercher</button>
+      </div>
+      <div id="searchResults" class="results"></div>
+    </section>
+
+    <section class="grade-item" id="grade-paysan" data-grade="Paysan" data-price="Gratuit" data-gain="5 coins / heure" data-note="Commandes de base">
+      <h2 class="grade-title">Paysan</h2>
+      <div class="grade-content">
+        <div class="grade-rank">Grade: Paysan</div>
+        <button class="cmd-btn" type="button" data-cmd-grade="Paysan">Voir les commandes</button>
+      </div>
+    </section>
+
+    <section class="grade-item" id="grade-villageois" data-grade="Villageois" data-price="40 coins" data-gain="10 coins / heure" data-note="Base + grade">
+      <h2 class="grade-title">Villageois</h2>
+      <div class="grade-content">
+        <div class="grade-rank">Grade: Villageois</div>
+        <button class="cmd-btn" type="button" data-cmd-grade="Villageois">Voir les commandes</button>
+      </div>
+    </section>
+
+    <section class="grade-item" id="grade-bourgeois" data-grade="Bourgeois" data-price="80 coins" data-gain="25 coins / heure" data-note="Base + grade">
+      <h2 class="grade-title">Bourgeois</h2>
+      <div class="grade-content">
+        <div class="grade-rank">Grade: Bourgeois</div>
+        <button class="cmd-btn" type="button" data-cmd-grade="Bourgeois">Voir les commandes</button>
+      </div>
+    </section>
+
+    <section class="grade-item" id="grade-chevalier" data-grade="Chevalier" data-price="200 coins" data-gain="45 coins / heure" data-note="Base + grade">
+      <h2 class="grade-title">Chevalier</h2>
+      <div class="grade-content">
+        <div class="grade-rank">Grade: Chevalier</div>
+        <button class="cmd-btn" type="button" data-cmd-grade="Chevalier">Voir les commandes</button>
+      </div>
+    </section>
+
+    <section class="grade-item" id="grade-seigneur" data-grade="Seigneur" data-price="500 coins" data-gain="102 coins / heure" data-note="Base + grade">
+      <h2 class="grade-title">Seigneur</h2>
+      <div class="grade-content">
+        <div class="grade-rank">Grade: Seigneur</div>
+        <button class="cmd-btn" type="button" data-cmd-grade="Seigneur">Voir les commandes</button>
+      </div>
+    </section>
+
+    <section class="grade-item" id="grade-vassal" data-grade="Vassal" data-price="1 500 coins" data-gain="130 coins / heure" data-note="Base + grade">
+      <h2 class="grade-title">Vassal</h2>
+      <div class="grade-content">
+        <div class="grade-rank">Grade: Vassal</div>
+        <button class="cmd-btn" type="button" data-cmd-grade="Vassal">Voir les commandes</button>
+      </div>
+    </section>
+
+    <section class="grade-item" id="grade-champion" data-grade="Champion" data-price="2 900 coins" data-gain="406 coins / heure" data-note="Grade rare">
+      <h2 class="grade-title">Champion</h2>
+      <div class="grade-content">
+        <div class="grade-rank">Grade: Champion</div>
+        <button class="cmd-btn" type="button" data-cmd-grade="Champion">Voir les commandes</button>
+      </div>
+    </section>
+
+    <section class="grade-item" id="grade-maitre" data-grade="Maitre" data-price="5 000 coins" data-gain="701 coins / heure" data-note="Grade rare">
+      <h2 class="grade-title">Maitre</h2>
+      <div class="grade-content">
+        <div class="grade-rank">Grade: Maitre</div>
+        <button class="cmd-btn" type="button" data-cmd-grade="Maitre">Voir les commandes</button>
+      </div>
+    </section>
+
+    <section class="grade-item" id="grade-roi" data-grade="Roi" data-price="9 000 coins" data-gain="1 209 coins / heure" data-note="Grade rare">
+      <h2 class="grade-title">Roi</h2>
+      <div class="grade-content">
+        <div class="grade-rank">Grade: Roi</div>
+        <button class="cmd-btn" type="button" data-cmd-grade="Roi">Voir les commandes</button>
+      </div>
+    </section>
+
+    <section class="grade-item" id="grade-empereur" data-grade="Empereur" data-price="14 000 coins" data-gain="2 100 coins / heure" data-note="Base + grade">
+      <h2 class="grade-title">Empereur</h2>
+      <div class="grade-content">
+        <div class="grade-rank">Grade: Empereur</div>
+        <button class="cmd-btn" type="button" data-cmd-grade="Empereur">Voir les commandes</button>
+      </div>
+    </section>
+
+    <section class="grade-item" id="grade-grand-maitre" data-grade="Grand maitre" data-price="25 000 coins" data-gain="4 500 coins / heure" data-note="Grade rare">
+      <h2 class="grade-title">Grand maitre</h2>
+      <div class="grade-content">
+        <div class="grade-rank">Grade: Grand maitre</div>
+        <button class="cmd-btn" type="button" data-cmd-grade="Grand maitre">Voir les commandes</button>
+      </div>
+    </section>
+
+    <section class="grade-item" id="grade-souverain" data-grade="Souverain" data-price="43 000 coins" data-gain="7 020 coins / heure" data-note="Grade rare">
+      <h2 class="grade-title">Souverain</h2>
+      <div class="grade-content">
+        <div class="grade-rank">Grade: Souverain</div>
+        <button class="cmd-btn" type="button" data-cmd-grade="Souverain">Voir les commandes</button>
+      </div>
+    </section>
+
+    <section class="grade-item" id="grade-roi-du-monde" data-grade="Roi du monde" data-price="70 000 coins" data-gain="10 006 coins / heure" data-note="Sans commandes modo">
+      <h2 class="grade-title">Roi du monde</h2>
+      <div class="grade-content">
+        <div class="grade-rank">Grade: Roi du monde</div>
+        <button class="cmd-btn" type="button" data-cmd-grade="Roi du monde">Voir les commandes</button>
+      </div>
+    </section>
+
+    <section class="grade-item" id="grade-empereur-du-monde" data-grade="Empereur du monde" data-price="105 000 coins" data-gain="14 999 coins / heure" data-note="Sans commandes modo">
+      <h2 class="grade-title">Empereur du monde</h2>
+      <div class="grade-content">
+        <div class="grade-rank">Grade: Empereur du monde</div>
+        <button class="cmd-btn" type="button" data-cmd-grade="Empereur du monde">Voir les commandes</button>
+      </div>
+    </section>
+
+    <section class="grade-item" id="grade-roi-univers" data-grade="Roi de l'univers" data-price="236 000 coins" data-gain="20 050 coins / heure" data-note="Sans commandes modo">
+      <h2 class="grade-title">Roi de l'univers</h2>
+      <div class="grade-content">
+        <div class="grade-rank">Grade: Roi de l'univers</div>
+        <button class="cmd-btn" type="button" data-cmd-grade="Roi de l'univers">Voir les commandes</button>
+      </div>
+    </section>
+
+    <section class="grade-item" id="grade-souverain-univers" data-grade="Souverain de l'univers" data-price="500 000 coins" data-gain="26 503 coins / heure" data-note="Sans commandes modo">
+      <h2 class="grade-title">Souverain de l'univers</h2>
+      <div class="grade-content">
+        <div class="grade-rank">Grade: Souverain de l'univers</div>
+        <button class="cmd-btn" type="button" data-cmd-grade="Souverain de l'univers">Voir les commandes</button>
+      </div>
+    </section>
+
+    <section class="grade-item" id="grade-empereur-temps" data-grade="Empereur du temps" data-price="1 021 000 coins" data-gain="40 031 coins / heure" data-note="Sans commandes modo">
+      <h2 class="grade-title">Empereur du temps</h2>
+      <div class="grade-content">
+        <div class="grade-rank">Grade: Empereur du temps</div>
+        <button class="cmd-btn" type="button" data-cmd-grade="Empereur du temps">Voir les commandes</button>
+      </div>
+    </section>
+
+    <section class="grade-item" id="grade-invincible" data-grade="Invincible" data-price="50 000 000 coins" data-gain="80 000 coins / heure" data-note="Sans commandes modo">
+      <h2 class="grade-title">Invincible</h2>
+      <div class="grade-content">
+        <div class="grade-rank">Grade: Invincible</div>
+        <button class="cmd-btn" type="button" data-cmd-grade="Invincible">Voir les commandes</button>
+      </div>
+    </section>
+
+    <section class="grade-item" id="grade-vip" data-grade="VIP" data-price="Via votes (rare)" data-gain="Bonus temporaires" data-note="Grade temporaire" data-duration="48h">
+      <h2 class="grade-title">VIP</h2>
+      <div class="grade-content">
+        <div class="grade-rank">Grade: VIP</div>
+        <button class="cmd-btn" type="button" data-cmd-grade="VIP">Voir les commandes</button>
+      </div>
+    </section>
+
+    <section class="grade-item" id="grade-donateur" data-grade="Donateur" data-price="Minimum 10 euros" data-gain="10 000 coins / 3h" data-note="Acces premium" data-duration="72h">
+      <h2 class="grade-title">Donateur</h2>
+      <div class="grade-content">
+        <div class="grade-rank">Grade: Donateur</div>
+        <button class="cmd-btn" type="button" data-cmd-grade="Donateur">Voir les commandes</button>
+      </div>
+    </section>
+  </main>
+
+  <div class="modal" id="commandsModal" aria-hidden="true">
+    <div class="modal-card">
+      <div class="modal-top">
+        <div class="modal-title" id="modalTitle">Commandes</div>
+        <button class="modal-close" id="modalClose" type="button" aria-label="Fermer">x</button>
+      </div>
+      <ul class="cmd-list" id="modalCmdList"></ul>
+    </div>
+  </div>
+
+  <script>
+    const gradeItems = document.querySelectorAll('.grade-item');
+    const searchInput = document.getElementById('gradeSearch');
+    const searchBtn = document.getElementById('searchBtn');
+    const searchResults = document.getElementById('searchResults');
+
+    const modal = document.getElementById('commandsModal');
+    const modalClose = document.getElementById('modalClose');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalCmdList = document.getElementById('modalCmdList');
+
+    const commandsByGrade = {
+      'Paysan': ['Toutes les commandes de base.'],
+      'Villageois': ['Toutes les commandes de base.', 'Commandes supplementaires du grade Villageois.'],
+      'Bourgeois': ['Toutes les commandes de base.', 'Commandes supplementaires du grade Bourgeois.'],
+      'Chevalier': ['Toutes les commandes de base.', 'Commandes supplementaires du grade Chevalier.'],
+      'Seigneur': ['Toutes les commandes de base.', 'Commandes supplementaires du grade Seigneur.'],
+      'Vassal': ['Toutes les commandes de base.', 'Commandes supplementaires du grade Vassal.'],
+      'Champion': ['Toutes les commandes de base.', 'Commandes supplementaires du grade Champion.'],
+      'Maitre': ['Toutes les commandes de base.', 'Commandes supplementaires du grade Maitre.'],
+      'Roi': ['Toutes les commandes de base.', 'Commandes supplementaires du grade Roi.'],
+      'Empereur': ['Toutes les commandes de base.', 'Commandes supplementaires du grade Empereur.'],
+      'Grand maitre': ['Toutes les commandes de base.', 'Commandes supplementaires du grade Grand maitre.'],
+      'Souverain': ['Toutes les commandes de base.', 'Commandes supplementaires du grade Souverain.'],
+      'Roi du monde': ['Toutes les commandes sauf les commandes de moderateur.'],
+      'Empereur du monde': ['Toutes les commandes sauf les commandes de moderateur.'],
+      "Roi de l'univers": ['Toutes les commandes sauf les commandes de moderateur.'],
+      "Souverain de l'univers": ['Toutes les commandes sauf les commandes de moderateur.'],
+      'Empereur du temps': ['Toutes les commandes sauf les commandes de moderateur.'],
+      'Invincible': ['Toutes les commandes sauf les commandes de moderateur.'],
+      'VIP': ['Toutes les commandes de base.', 'Commandes supplementaires du grade VIP.', 'Fly activable/desactivable pendant 48h.'],
+      'Donateur': ['Toutes les commandes de base.', 'Commandes supplementaires du grade Donateur.', 'Bonus Donateur actifs selon les conditions du grade.']
+    };
+
+    const grades = Array.from(gradeItems).map((item) => ({
+      name: item.dataset.grade || '',
+      element: item,
+      content: item.querySelector('.grade-content'),
+      title: item.querySelector('.grade-title')
+    }));
+
+    const addStatBoxes = () => {
+      grades.forEach((grade) => {
+        const el = grade.element;
+        const content = grade.content;
+        if (!el || !content || content.querySelector('.grade-stats')) {
+          return;
+        }
+
+        const price = el.dataset.price || '-';
+        const gain = el.dataset.gain || '-';
+        const note = el.dataset.note || '-';
+        const duration = el.dataset.duration || '';
+
+        const stats = document.createElement('div');
+        stats.className = 'grade-stats';
+        if (duration) {
+          stats.classList.add('has-duration');
+        }
+        stats.innerHTML =
+          '<div class="stat-card"><span class="stat-label">Prix</span><span class="stat-value">' + price + '</span></div>' +
+          '<div class="stat-card"><span class="stat-label">Gain</span><span class="stat-value">' + gain + '</span></div>' +
+          '<div class="stat-card"><span class="stat-label">Commande</span><span class="stat-value">' + note + '</span></div>' +
+          (duration ? '<div class="stat-card"><span class="stat-label">Durer</span><span class="stat-value">' + duration + '</span></div>' : '');
+
+        content.prepend(stats);
+      });
+    };
+
+    const setPanelState = (panel, content, open) => {
+      if (!panel || !content) {
+        return;
+      }
+
+      if (open) {
+        panel.classList.add('open');
+        content.style.maxHeight = content.scrollHeight + 'px';
+      } else {
+        if (content.style.maxHeight === 'none' || !content.style.maxHeight) {
+          content.style.maxHeight = content.scrollHeight + 'px';
+          requestAnimationFrame(() => {
+            content.style.maxHeight = '0px';
+          });
+        } else {
+          content.style.maxHeight = '0px';
+        }
+        panel.classList.remove('open');
+      }
+    };
+
+    const bindMaxHeightReset = (panel, content) => {
+      if (!panel || !content) {
+        return;
+      }
+
+      content.addEventListener('transitionend', (event) => {
+        if (event.propertyName !== 'max-height') {
+          return;
+        }
+        if (panel.classList.contains('open')) {
+          content.style.maxHeight = 'none';
+        }
+      });
+    };
+
+    grades.forEach((grade) => {
+      if (!grade.title || !grade.content) {
+        return;
+      }
+
+      grade.title.setAttribute('role', 'button');
+      grade.title.setAttribute('tabindex', '0');
+      grade.title.setAttribute('aria-expanded', 'false');
+
+      bindMaxHeightReset(grade.element, grade.content);
+
+      const toggleGrade = () => {
+        const willOpen = !grade.element.classList.contains('open');
+        setPanelState(grade.element, grade.content, willOpen);
+        grade.title.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+      };
+
+      grade.title.addEventListener('click', toggleGrade);
+      grade.title.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          toggleGrade();
+        }
+      });
+    });
+
+    const openGrade = (grade) => {
+      if (!grade || !grade.element || !grade.content || !grade.title) {
+        return;
+      }
+
+      if (!grade.element.classList.contains('open')) {
+        setPanelState(grade.element, grade.content, true);
+        grade.title.setAttribute('aria-expanded', 'true');
+      }
+
+      setTimeout(() => {
+        grade.element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 120);
+    };
+
+    const renderResults = (query) => {
+      searchResults.innerHTML = '';
+      const q = (query || '').trim().toLowerCase();
+
+      const filtered = q
+        ? grades.filter((g) => g.name.toLowerCase().includes(q))
+        : grades;
+
+      filtered.forEach((grade) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'result-btn';
+        btn.textContent = grade.name;
+        btn.addEventListener('click', () => openGrade(grade));
+        searchResults.appendChild(btn);
+      });
+    };
+
+    const showCommands = (gradeName) => {
+      const commands = commandsByGrade[gradeName] || [];
+      modalTitle.textContent = 'Commandes - ' + gradeName;
+      modalCmdList.innerHTML = '';
+
+      commands.forEach((cmd) => {
+        const li = document.createElement('li');
+        li.textContent = cmd;
+        modalCmdList.appendChild(li);
+      });
+
+      modal.classList.remove('closing');
+      modal.classList.add('open');
+      modal.setAttribute('aria-hidden', 'false');
+    };
+
+    document.querySelectorAll('[data-cmd-grade]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const gradeName = button.getAttribute('data-cmd-grade') || '';
+        showCommands(gradeName);
+      });
+    });
+
+    const closeModal = () => {
+      if (!modal.classList.contains('open')) {
+        return;
+      }
+
+      modal.classList.add('closing');
+      modal.classList.remove('open');
+
+      setTimeout(() => {
+        modal.classList.remove('closing');
+        modal.setAttribute('aria-hidden', 'true');
+      }, 220);
+    };
+
+    modalClose.addEventListener('click', closeModal);
+    modal.addEventListener('click', (event) => {
+      if (event.target === modal) {
+        closeModal();
+      }
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && modal.classList.contains('open')) {
+        closeModal();
+      }
+    });
+
+    if (searchInput) {
+      searchInput.addEventListener('input', () => renderResults(searchInput.value));
+      searchInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          const q = searchInput.value.trim().toLowerCase();
+          const found = grades.find((g) => g.name.toLowerCase() === q);
+          if (found) {
+            openGrade(found);
+          } else {
+            renderResults(searchInput.value);
+          }
+        }
+      });
+    }
+
+    if (searchBtn) {
+      searchBtn.addEventListener('click', () => renderResults(searchInput ? searchInput.value : ''));
+    }
+
+    addStatBoxes();
+    renderResults('');
+  </script>
+</body>
 </html>
