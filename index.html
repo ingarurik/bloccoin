@@ -737,7 +737,7 @@
   const CATS = {
     accueil: { ico:'🏠', ttl:'Accueil', pages:[
       {ico:'📄',lbl:'Présentation',file:'Présentation.html'},
-      {ico:'🖼️',lbl:'Ingarurik',file:'Ingarurik.html'},
+      {ico:'🖼️',lbl:'Ingarurik',file:'https://sites.google.com/view/ingarurik'},
       {ico:'🎬',lbl:'Diaporama',file:'Diaporama.html'},
       {ico:'🔗',lbl:'Réseaux sociaux',file:'réseaux-sociaux.html'},
     ]},
@@ -809,6 +809,13 @@
 
   function openPage(lbl, fileName) {
     const filename = fileName || (lbl.toLowerCase().replace(/\s+/g, '-') + '.html');
+
+    if (/^https?:\/\//i.test(filename)) {
+      window.location.href = filename;
+      closePanel();
+      return;
+    }
+
     const encodedPath = './' + encodeURI(filename);
     const iframe = document.getElementById('pgIframe');
     const pgFallback = document.getElementById('pgFallback');
