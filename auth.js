@@ -31,10 +31,16 @@ function traduireErreur(message) {
 let profilUtilisateur = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
-  afficherErreurOAuthRetour();
-  await verifierSession();
   initialiserModal();
   initialiserMenuCompte();
+
+  try {
+    afficherErreurOAuthRetour();
+    await verifierSession();
+  } catch (err) {
+    console.error('Erreur initialisation auth:', err);
+    afficherBoutonConnexion();
+  }
 });
 
 function afficherErreurOAuthRetour() {
@@ -57,10 +63,15 @@ function afficherErreurOAuthRetour() {
 }
 
 async function verifierSession() {
-  const { data: { session } } = await _supabase.auth.getSession();
-  if (session) {
-    await chargerProfilEtAfficher(session.user);
-  } else {
+  try {
+    const { data: { session } } = await _supabase.auth.getSession();
+    if (session) {
+      await chargerProfilEtAfficher(session.user);
+      return;
+    }
+    afficherBoutonConnexion();
+  } catch (err) {
+    console.error('Erreur verification session:', err);
     afficherBoutonConnexion();
   }
 }
