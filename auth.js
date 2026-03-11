@@ -44,7 +44,7 @@ let profilUtilisateur = null;
 let authStateProcessing = false;
 let sessionCheckPromise = null;
 let fileAuthQueue = Promise.resolve();
-window.__AUTH_BUILD__ = '20260311-24';
+window.__AUTH_BUILD__ = '20260311-25';
 window.AUTH_BUILD = window.__AUTH_BUILD__;
 
 function executerAuthEnSerie(tache) {
@@ -730,6 +730,9 @@ function initialiserMenuCompte() {
 
   const btnDeconnexion = document.getElementById('btn-deconnexion');
   if (btnDeconnexion) btnDeconnexion.addEventListener('click', deconnecter);
+
+  const btnDeconnexionOverlay = document.getElementById('btn-deconnexion-overlay');
+  if (btnDeconnexionOverlay) btnDeconnexionOverlay.addEventListener('click', deconnecter);
 
   document.addEventListener('click', (e) => {
     const zone = document.getElementById('zone-compte');

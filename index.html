@@ -232,6 +232,20 @@
       cursor: pointer;
     }
     .compte-fermer:hover { border-color: var(--gold); color: var(--gold); }
+    .compte-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 8px;
+    }
+    .compte-deconnexion {
+      border-color: rgba(255, 119, 119, 0.45);
+      color: #ffb3b3;
+    }
+    .compte-deconnexion:hover {
+      border-color: #ff7777;
+      color: #ffd1d1;
+    }
     .onglets {
       display: flex;
       margin: 16px 22px 0;
@@ -935,8 +949,11 @@
 
 <div id="compte-overlay">
   <div class="compte-carte" role="dialog" aria-modal="true" aria-label="Fenetre compte">
-    <div class="compte-texte">salut</div>
-    <button type="button" class="compte-fermer" id="compte-fermer">Fermer</button>
+    <div class="compte-texte">Compte</div>
+    <div class="compte-actions">
+      <button type="button" class="compte-fermer compte-deconnexion" id="btn-deconnexion-overlay">Deconnexion</button>
+      <button type="button" class="compte-fermer" id="compte-fermer">Fermer</button>
+    </div>
   </div>
 </div>
 
@@ -1153,7 +1170,7 @@
   });
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="auth.js?v=20260311-24"></script>
+<script src="auth.js?v=20260311-25"></script>
 </body>
 </html>
 
