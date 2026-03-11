@@ -989,39 +989,7 @@
 
       <div data-panneau="inscription">
         <button type="button" class="btn-google" data-google-auth>Continuer avec Google</button>
-        <div class="separateur">ou avec un email</div>
-        <form id="form-inscription" novalidate>
-          <div class="grille-2">
-            <div class="champ-groupe">
-              <label for="ins-pseudo">Pseudo site</label>
-              <input id="ins-pseudo" type="text" placeholder="CreeperKiller" required minlength="3" />
-            </div>
-            <div class="champ-groupe">
-              <label for="ins-mc">Pseudo Minecraft</label>
-              <input id="ins-mc" type="text" placeholder="Steve_42" required />
-            </div>
-          </div>
-          <div class="champ-groupe">
-            <label for="ins-nom">Nom et prenom</label>
-            <input id="ins-nom" type="text" placeholder="Jean Dupont" required />
-          </div>
-          <div class="champ-groupe">
-            <label for="ins-email">Adresse email</label>
-            <input id="ins-email" type="email" placeholder="toi@exemple.fr" required autocomplete="email" />
-          </div>
-          <div class="grille-2">
-            <div class="champ-groupe">
-              <label for="ins-mdp">Mot de passe</label>
-              <input id="ins-mdp" type="password" placeholder="********" required minlength="6" autocomplete="new-password" />
-            </div>
-            <div class="champ-groupe">
-              <label for="ins-mdp-confirm">Confirmation</label>
-              <input id="ins-mdp-confirm" type="password" placeholder="********" required autocomplete="new-password" />
-            </div>
-          </div>
-          <button type="submit" class="btn-soumettre" data-label="Creer mon compte">Creer mon compte</button>
-          <div id="err-inscription" role="alert"></div>
-        </form>
+        <div id="err-inscription" role="alert" style="display:block; margin-top:10px;">Inscription disponible uniquement avec Google pour le moment.</div>
       </div>
     </div>
   </div>

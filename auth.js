@@ -747,60 +747,8 @@ async function soumettreConnexion(e) {
 }
 
 async function soumettreInscription(e) {
-  e.preventDefault();
-
-  const pseudo_site = document.getElementById('ins-pseudo').value.trim();
-  const nom_prenom = document.getElementById('ins-nom').value.trim();
-  const email = document.getElementById('ins-email').value.trim();
-  const pseudo_minecraft = document.getElementById('ins-mc').value.trim();
-  const mdp = document.getElementById('ins-mdp').value;
-  const mdp_conf = document.getElementById('ins-mdp-confirm').value;
-
-  if (mdp !== mdp_conf) {
-    afficherErreur('err-inscription', 'Les mots de passe ne correspondent pas.');
-    return;
-  }
-  if (pseudo_site.length < 3) {
-    afficherErreur('err-inscription', 'Le pseudo doit faire au moins 3 caracteres.');
-    return;
-  }
-
-  setChargement('form-inscription', true);
-  viderErreurs();
-
-  const { data, error: errAuth } = await _supabase.auth.signUp({
-    email,
-    password: mdp,
-    options: {
-      data: { pseudo_site }
-    }
-  });
-
-  if (errAuth) {
-    setChargement('form-inscription', false);
-    afficherErreur('err-inscription', traduireErreur(errAuth.message));
-    return;
-  }
-
-  if (data.user) {
-    const { error: errProfil } = await _supabase.from('profils').insert({
-      id: data.user.id,
-      pseudo_site,
-      nom_prenom,
-      email,
-      pseudo_minecraft
-    });
-
-    if (errProfil) {
-      setChargement('form-inscription', false);
-      afficherErreur('err-inscription', traduireErreur(errProfil.message));
-      return;
-    }
-  }
-
-  setChargement('form-inscription', false);
-  afficherSucces('err-inscription', 'Compte cree. Verifie ta boite mail pour confirmer ton adresse.');
-  document.getElementById('form-inscription').reset();
+  if (e) e.preventDefault();
+  afficherErreur('err-inscription', 'Inscription disponible uniquement avec Google.');
 }
 
 async function connexionGoogle() {
