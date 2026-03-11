@@ -21,6 +21,16 @@
     }
     .coin { font-size: 2.5rem; display: block; margin-bottom: 18px; }
     .txt { font-size: 0.78rem; letter-spacing: 0.2em; text-transform: uppercase; color: #9a8a72; }
+    .err {
+      margin-top: 14px;
+      font-size: 0.75rem;
+      letter-spacing: 0.04em;
+      color: #ff9e9e;
+      max-width: 680px;
+      text-align: center;
+      line-height: 1.4;
+      display: none;
+    }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
   </style>
 </head>
@@ -28,6 +38,7 @@
   <div class="msg">
     <span class="coin">🪙</span>
     <span class="txt">Connexion en cours…</span>
+    <div class="err" id="auth-err"></div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
@@ -48,21 +59,33 @@
       window.location.replace('./index.html');
     }
 
-    // Fallback de sécurité: si Supabase tarde trop, on revient quand même à l'accueil.
-    const hardTimeout = setTimeout(rentrerAccueil, 7000);
+    function afficherErreurCallback(message) {
+      const el = document.getElementById('auth-err');
+      if (!el) return;
+      el.textContent = message;
+      el.style.display = 'block';
+    }
+
+    // Garde-fou long: on laisse largement le temps a l'echange PKCE.
+    const hardTimeout = setTimeout(rentrerAccueil, 20000);
 
     // Échange explicite du code PKCE → crée la session dans localStorage
     (async () => {
       const code = new URLSearchParams(window.location.search).get('code');
       if (code) {
         try {
-          await Promise.race([
-            _sb.auth.exchangeCodeForSession(code),
-            new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout PKCE')), 4500))
-          ]);
+          const { error } = await _sb.auth.exchangeCodeForSession(code);
+          if (error) {
+            throw error;
+          }
         } catch (e) {
           console.error('Erreur échange PKCE:', e);
+          afficherErreurCallback('Connexion OAuth interrompue. Reessaie dans 2 secondes...');
+          await new Promise((resolve) => setTimeout(resolve, 1800));
         }
+      } else {
+        // Cas de secours: si pas de code present, on laisse Supabase relire une session existante.
+        await _sb.auth.getSession();
       }
     })().finally(() => {
       clearTimeout(hardTimeout);
