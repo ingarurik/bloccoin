@@ -44,7 +44,7 @@ let profilUtilisateur = null;
 let authStateProcessing = false;
 let sessionCheckPromise = null;
 let fileAuthQueue = Promise.resolve();
-window.__AUTH_BUILD__ = '20260311-25';
+window.__AUTH_BUILD__ = '20260311-26';
 window.AUTH_BUILD = window.__AUTH_BUILD__;
 
 function executerAuthEnSerie(tache) {
@@ -187,6 +187,23 @@ function nettoyerVerrouAuthOrphelin() {
   }
 }
 
+function effacerSessionLocale() {
+  profilUtilisateur = null;
+  nettoyerVerrouAuthOrphelin();
+
+  try {
+    window.localStorage.removeItem(SUPABASE_AUTH_STORAGE_KEY);
+  } catch (_) {
+    // Ignore storage access errors.
+  }
+
+  try {
+    window.sessionStorage.removeItem(SUPABASE_AUTH_STORAGE_KEY);
+  } catch (_) {
+    // Ignore storage access errors.
+  }
+}
+
 async function getSessionFiable(timeoutMs = 7000) {
   const sessionStockee = lireSessionStockee();
   if (sessionValide(sessionStockee)) {
@@ -307,17 +324,22 @@ async function verifierSession() {
       nettoyerParamsOAuthDansUrl();
     }
 
-    if (sessionValide(session)) {
-      afficherPseudo(formatterAffichageEmail(session.user?.email || pseudoAffichageDepuisUtilisateur(session.user)));
-      await chargerProfilEtAfficher(session.user);
+    const { data: { user } } = await getUserFiable();
+
+    if (sessionValide(session) && user?.id) {
+      afficherPseudo(formatterAffichageEmail(user.email || session.user?.email || pseudoAffichageDepuisUtilisateur(user)));
+      await chargerProfilEtAfficher(user);
       return;
     }
 
-    const { data: { user } } = await getUserFiable();
     if (user) {
       afficherPseudo(formatterAffichageEmail(user.email || pseudoAffichageDepuisUtilisateur(user)));
       await chargerProfilEtAfficher(user);
       return;
+    }
+
+    if (sessionValide(session)) {
+      effacerSessionLocale();
     }
 
     afficherBoutonConnexion();
@@ -708,7 +730,14 @@ async function connexionGoogle() {
 async function deconnecter() {
   fermerMenuCompte();
   fermerFenetreCompte();
-  await _supabase.auth.signOut();
+  effacerSessionLocale();
+  afficherBoutonConnexion();
+
+  try {
+    await avecTimeout(_supabase.auth.signOut({ scope: 'local' }), 3000, 'signOut');
+  } catch (_) {
+    // Local cleanup already done.
+  }
 }
 
 function initialiserMenuCompte() {
