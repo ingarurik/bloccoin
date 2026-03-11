@@ -30,7 +30,13 @@ function traduireErreur(message) {
 
 let profilUtilisateur = null;
 let authStateProcessing = false;
-window.__AUTH_BUILD__ = '20260311-16';
+let sessionCheckPromise = null;
+window.__AUTH_BUILD__ = '20260311-17';
+
+function estErreurVerrouSupabase(err) {
+  const message = String(err?.message || err || '');
+  return err?.name === 'AbortError' || message.includes('Lock broken by another request');
+}
 
 document.addEventListener('DOMContentLoaded', async () => {
   initialiserModal();
@@ -91,13 +97,11 @@ async function forcerSynchroPostOAuth() {
         return true;
       }
 
-      const { data: { user }, error } = await _supabase.auth.getUser();
-      if (!error && user) {
-        await chargerProfilEtAfficher(user);
-        nettoyerParamsOAuthDansUrl();
-        return true;
+      // Keep a single auth API call here to reduce lock contention.
+    } catch (err) {
+      if (!estErreurVerrouSupabase(err)) {
+        console.warn('Erreur synchro OAuth:', err);
       }
-    } catch (_) {
       // Keep retrying until timeout.
     }
 
@@ -135,6 +139,9 @@ function afficherErreurOAuthRetour() {
 }
 
 async function verifierSession() {
+  if (sessionCheckPromise) return sessionCheckPromise;
+
+  sessionCheckPromise = (async () => {
   try {
     const params = new URLSearchParams(window.location.search);
     const retourOAuth = params.get('auth_return') === '1';
@@ -151,36 +158,46 @@ async function verifierSession() {
       return;
     }
 
-    const { data: { user } } = await _supabase.auth.getUser();
-    if (user) {
-      await chargerProfilEtAfficher(user);
-      return;
-    }
-
     afficherBoutonConnexion();
   } catch (err) {
+    if (estErreurVerrouSupabase(err)) {
+      // Do not force logout UI on transient auth lock races.
+      return;
+    }
     console.error('Erreur verification session:', err);
     afficherBoutonConnexion();
+  } finally {
+    sessionCheckPromise = null;
   }
+  })();
+
+  return sessionCheckPromise;
 }
 
 function demarrerResynchronisationSession() {
   let tentatives = 0;
   const maxTentatives = 10;
+  let verificationEnCours = false;
   const interval = setInterval(async () => {
-    tentatives += 1;
+    if (verificationEnCours) return;
+    verificationEnCours = true;
+    try {
+      tentatives += 1;
 
-    const btnConnexion = document.getElementById('btn-connexion');
-    const dejaConnecte = btnConnexion && btnConnexion.style.display === 'none';
-    if (dejaConnecte) {
-      clearInterval(interval);
-      return;
-    }
+      const btnConnexion = document.getElementById('btn-connexion');
+      const dejaConnecte = btnConnexion && btnConnexion.style.display === 'none';
+      if (dejaConnecte) {
+        clearInterval(interval);
+        return;
+      }
 
-    await verifierSession();
+      await verifierSession();
 
-    if (tentatives >= maxTentatives) {
-      clearInterval(interval);
+      if (tentatives >= maxTentatives) {
+        clearInterval(interval);
+      }
+    } finally {
+      verificationEnCours = false;
     }
   }, 500);
 
