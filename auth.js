@@ -29,6 +29,7 @@ function traduireErreur(message) {
 }
 
 let profilUtilisateur = null;
+let authStateProcessing = false;
 
 document.addEventListener('DOMContentLoaded', async () => {
   initialiserModal();
@@ -93,13 +94,20 @@ async function verifierSession() {
 }
 
 _supabase.auth.onAuthStateChange(async (event, session) => {
-  if (event === 'SIGNED_IN' && session) {
-    nettoyerParamsOAuthDansUrl();
-    await chargerProfilEtAfficher(session.user);
-    fermerModal();
-  } else if (event === 'SIGNED_OUT') {
-    profilUtilisateur = null;
-    afficherBoutonConnexion();
+  if (authStateProcessing) return;
+  authStateProcessing = true;
+
+  try {
+    if (event === 'SIGNED_IN' && session) {
+      nettoyerParamsOAuthDansUrl();
+      await chargerProfilEtAfficher(session.user);
+      fermerModal();
+    } else if (event === 'SIGNED_OUT') {
+      profilUtilisateur = null;
+      afficherBoutonConnexion();
+    }
+  } finally {
+    authStateProcessing = false;
   }
 });
 
@@ -120,7 +128,7 @@ async function chargerProfilEtAfficher(userOrId) {
   // New OAuth users can exist in auth.users without a row in profils.
   if (error && error.code !== 'PGRST116') {
     if (userObj) {
-      afficherPseudo(pseudoAffichageDepuisUtilisateur(userObj));
+      afficherPseudo(formatterAffichageEmail(userObj.email || pseudoAffichageDepuisUtilisateur(userObj)));
       return;
     }
     afficherBoutonConnexion();
@@ -134,7 +142,7 @@ async function chargerProfilEtAfficher(userOrId) {
 
   if (!profilFinal) {
     if (userObj) {
-      afficherPseudo(pseudoAffichageDepuisUtilisateur(userObj));
+      afficherPseudo(formatterAffichageEmail(userObj.email || pseudoAffichageDepuisUtilisateur(userObj)));
       return;
     }
     afficherBoutonConnexion();
@@ -142,7 +150,8 @@ async function chargerProfilEtAfficher(userOrId) {
   }
 
   profilUtilisateur = profilFinal;
-  afficherPseudo(profilFinal.pseudo_site);
+  const emailUtilisateur = userObj?.email || profilFinal.email || '';
+  afficherPseudo(formatterAffichageEmail(emailUtilisateur || profilFinal.pseudo_site));
 }
 
 function pseudoAffichageDepuisUtilisateur(user) {
@@ -190,12 +199,12 @@ async function creerProfilDepuisUtilisateur(user) {
     });
 
     if (!errInsert) {
-      const { data: profil } = await _supabase
+      const { data: profilRecup } = await _supabase
         .from('profils')
         .select('*')
         .eq('id', user.id)
         .single();
-      return profil || null;
+      return profilRecup || null;
     }
 
     // Retry with another pseudo when unique constraint is hit.
@@ -209,8 +218,14 @@ async function creerProfilDepuisUtilisateur(user) {
 
 function afficherBoutonConnexion() {
   const btn = document.getElementById('btn-connexion');
+  const btnCompte = document.getElementById('btn-compte');
   const zone = document.getElementById('zone-compte');
+
   if (btn) btn.style.display = '';
+  if (btnCompte) {
+    btnCompte.style.display = 'none';
+    btnCompte.textContent = 'Compte';
+  }
   if (zone) zone.style.display = 'none';
   fermerFenetreCompte();
 }
@@ -226,11 +241,16 @@ function formatterAffichageEmail(email) {
 
 function afficherPseudo(valeurAffichee) {
   const btn = document.getElementById('btn-connexion');
+  const btnCompte = document.getElementById('btn-compte');
   const zone = document.getElementById('zone-compte');
   const nomAffiche = document.getElementById('pseudo-affiche');
 
   if (btn) btn.style.display = 'none';
-  if (zone) zone.style.display = '';
+  if (btnCompte) {
+    btnCompte.style.display = '';
+    btnCompte.textContent = `Compte: ${valeurAffichee}`;
+  }
+  if (zone) zone.style.display = 'none';
   if (nomAffiche) nomAffiche.textContent = valeurAffichee;
 }
 
@@ -252,8 +272,8 @@ function initialiserModal() {
   const btnFermer = document.getElementById('auth-fermer');
   if (btnFermer) btnFermer.addEventListener('click', fermerModal);
 
-  document.querySelectorAll('[data-onglet]').forEach((btn) => {
-    btn.addEventListener('click', () => basculerOnglet(btn.dataset.onglet));
+  document.querySelectorAll('[data-onglet]').forEach((btnOnglet) => {
+    btnOnglet.addEventListener('click', () => basculerOnglet(btnOnglet.dataset.onglet));
   });
 
   const formConnexion = document.getElementById('form-connexion');
@@ -262,8 +282,8 @@ function initialiserModal() {
   const formInscription = document.getElementById('form-inscription');
   if (formInscription) formInscription.addEventListener('submit', soumettreInscription);
 
-  document.querySelectorAll('[data-google-auth]').forEach((btn) => {
-    btn.addEventListener('click', connexionGoogle);
+  document.querySelectorAll('[data-google-auth]').forEach((btnGoogle) => {
+    btnGoogle.addEventListener('click', connexionGoogle);
   });
 }
 
@@ -284,9 +304,25 @@ function fermerModal() {
   viderErreurs();
 }
 
+function ouvrirFenetreCompte() {
+  const overlay = document.getElementById('compte-overlay');
+  if (overlay) {
+    overlay.classList.add('actif');
+    document.body.style.overflow = 'hidden';
+  }
+}
+
+function fermerFenetreCompte() {
+  const overlay = document.getElementById('compte-overlay');
+  if (overlay) {
+    overlay.classList.remove('actif');
+    document.body.style.overflow = '';
+  }
+}
+
 function basculerOnglet(onglet) {
-  document.querySelectorAll('[data-onglet]').forEach((btn) => {
-    btn.classList.toggle('actif', btn.dataset.onglet === onglet);
+  document.querySelectorAll('[data-onglet]').forEach((btnOnglet) => {
+    btnOnglet.classList.toggle('actif', btnOnglet.dataset.onglet === onglet);
   });
   document.querySelectorAll('[data-panneau]').forEach((panneau) => {
     panneau.classList.toggle('actif', panneau.dataset.panneau === onglet);
@@ -302,7 +338,7 @@ async function soumettreConnexion(e) {
   setChargement('form-connexion', true);
   viderErreurs();
 
-      afficherPseudo(formatterAffichageEmail(userObj.email || pseudoAffichageDepuisUtilisateur(userObj)));
+  const { error } = await _supabase.auth.signInWithPassword({ email, password: mdp });
 
   setChargement('form-connexion', false);
   if (error) afficherErreur('err-connexion', traduireErreur(error.message));
@@ -324,23 +360,12 @@ async function soumettreInscription(e) {
   }
   if (pseudo_site.length < 3) {
     afficherErreur('err-inscription', 'Le pseudo doit faire au moins 3 caracteres.');
-  const emailUtilisateur = userObj?.email || profilFinal.email || '';
-  afficherPseudo(formatterAffichageEmail(emailUtilisateur || profilFinal.pseudo_site));
+    return;
   }
 
   setChargement('form-inscription', true);
   viderErreurs();
-  if (pseudoBtn) pseudoBtn.addEventListener('click', ouvrirFenetreCompte);
 
-  const btnFermerFenetre = document.getElementById('compte-fermer');
-  if (btnFermerFenetre) btnFermerFenetre.addEventListener('click', fermerFenetreCompte);
-
-  const overlayCompte = document.getElementById('compte-overlay');
-  if (overlayCompte) {
-    overlayCompte.addEventListener('click', (e) => {
-      if (e.target === overlayCompte) fermerFenetreCompte();
-    });
-  }
   const { data, error: errAuth } = await _supabase.auth.signUp({
     email,
     password: mdp,
@@ -349,10 +374,6 @@ async function soumettreInscription(e) {
     }
   });
 
-
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') fermerFenetreCompte();
-  });
   if (errAuth) {
     setChargement('form-inscription', false);
     afficherErreur('err-inscription', traduireErreur(errAuth.message));
@@ -392,12 +413,26 @@ async function connexionGoogle() {
 
 async function deconnecter() {
   fermerMenuCompte();
+  fermerFenetreCompte();
   await _supabase.auth.signOut();
 }
 
 function initialiserMenuCompte() {
   const pseudoBtn = document.getElementById('pseudo-affiche');
-  if (pseudoBtn) pseudoBtn.addEventListener('click', basculerMenuCompte);
+  if (pseudoBtn) pseudoBtn.addEventListener('click', ouvrirFenetreCompte);
+
+  const boutonCompte = document.getElementById('btn-compte');
+  if (boutonCompte) boutonCompte.addEventListener('click', ouvrirFenetreCompte);
+
+  const btnFermerFenetre = document.getElementById('compte-fermer');
+  if (btnFermerFenetre) btnFermerFenetre.addEventListener('click', fermerFenetreCompte);
+
+  const overlayCompte = document.getElementById('compte-overlay');
+  if (overlayCompte) {
+    overlayCompte.addEventListener('click', (e) => {
+      if (e.target === overlayCompte) fermerFenetreCompte();
+    });
+  }
 
   const btnDeconnexion = document.getElementById('btn-deconnexion');
   if (btnDeconnexion) btnDeconnexion.addEventListener('click', deconnecter);
@@ -405,6 +440,10 @@ function initialiserMenuCompte() {
   document.addEventListener('click', (e) => {
     const zone = document.getElementById('zone-compte');
     if (zone && !zone.contains(e.target)) fermerMenuCompte();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') fermerFenetreCompte();
   });
 }
 

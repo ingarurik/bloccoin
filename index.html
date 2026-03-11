@@ -102,6 +102,15 @@
       color: var(--gold);
       opacity: 1;
     }
+    .nav-cta-account {
+      display: none;
+      border-color: rgba(143, 243, 182, 0.45);
+      color: #8bf3b6;
+    }
+    .nav-cta-account:hover {
+      border-color: #8bf3b6;
+      color: #baf9d1;
+    }
     .nav-cta-group { display: flex; gap: 8px; }
 
     #zone-compte { display: none; position: relative; }
@@ -684,6 +693,7 @@
   <div class="nav-cta-group">
     <button class="nav-cta" onclick="document.getElementById('join').scrollIntoView({behavior:'smooth'})">Jouer</button>
     <button class="nav-cta nav-cta-secondary" id="btn-connexion">Se connecter</button>
+    <button class="nav-cta nav-cta-secondary nav-cta-account" id="btn-compte" type="button">Compte</button>
     <div id="zone-compte">
       <button id="pseudo-affiche"></button>
       <div id="menu-compte">
@@ -1134,7 +1144,7 @@
   });
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="auth.js?v=20260311-7"></script>
+<script src="auth.js?v=20260311-8"></script>
 </body>
 </html>
 
