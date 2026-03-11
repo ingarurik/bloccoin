@@ -30,6 +30,7 @@ function traduireErreur(message) {
 
 let profilUtilisateur = null;
 let authStateProcessing = false;
+window.__AUTH_BUILD__ = '20260311-16';
 
 document.addEventListener('DOMContentLoaded', async () => {
   initialiserModal();
