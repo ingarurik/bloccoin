@@ -3,7 +3,14 @@
 const SUPABASE_URL = 'https://cimyrkybpnssyeyobyrh.supabase.co';
 const SUPABASE_ANON = 'sb_publishable_XAfHoy6vcPskEW1vNJaAkA_92iGeE-v';
 
-const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
+  auth: {
+    flowType: 'pkce',
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true
+  }
+});
 
 const ERREURS = {
   'User already registered': 'Cette adresse email est deja utilisee.',
@@ -24,10 +31,48 @@ function traduireErreur(message) {
 let profilUtilisateur = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
+  await gererRetourOAuth();
+  afficherErreurOAuthRetour();
   await verifierSession();
   initialiserModal();
   initialiserMenuCompte();
 });
+
+async function gererRetourOAuth() {
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get('code');
+
+  if (!code) return;
+
+  const { error } = await _supabase.auth.exchangeCodeForSession(code);
+
+  // Clean the URL so reloading the page does not retry code exchange.
+  window.history.replaceState({}, document.title, window.location.pathname);
+
+  if (error) {
+    afficherErreur('err-connexion', traduireErreur(error.message));
+    ouvrirModal();
+  }
+}
+
+function afficherErreurOAuthRetour() {
+  const params = new URLSearchParams(window.location.search);
+  const hash = new URLSearchParams((window.location.hash || '').replace(/^#/, ''));
+  const errorMessage =
+    params.get('error_description') ||
+    params.get('error') ||
+    hash.get('error_description') ||
+    hash.get('error');
+
+  if (!errorMessage) return;
+
+  const message = decodeURIComponent(errorMessage).replace(/\+/g, ' ');
+  afficherErreur('err-connexion', traduireErreur(message));
+  ouvrirModal();
+
+  // Remove oauth error params from URL for cleaner refreshes.
+  window.history.replaceState({}, document.title, window.location.pathname);
+}
 
 async function verifierSession() {
   const { data: { session } } = await _supabase.auth.getSession();
@@ -40,7 +85,7 @@ async function verifierSession() {
 
 _supabase.auth.onAuthStateChange(async (event, session) => {
   if (event === 'SIGNED_IN' && session) {
-    await chargerProfilEtAfficher(session.user.id);
+    await chargerProfilEtAfficher(session.user);
     fermerModal();
   } else if (event === 'SIGNED_OUT') {
     profilUtilisateur = null;
@@ -48,20 +93,91 @@ _supabase.auth.onAuthStateChange(async (event, session) => {
   }
 });
 
-async function chargerProfilEtAfficher(userId) {
+async function chargerProfilEtAfficher(userOrId) {
+  const userId = typeof userOrId === 'string' ? userOrId : userOrId?.id;
+  if (!userId) {
+    afficherBoutonConnexion();
+    return;
+  }
+
   const { data: profil, error } = await _supabase
     .from('profils')
     .select('*')
     .eq('id', userId)
     .single();
 
-  if (error || !profil) {
+  // New OAuth users can exist in auth.users without a row in profils.
+  if (error && error.code !== 'PGRST116') {
     afficherBoutonConnexion();
     return;
   }
 
-  profilUtilisateur = profil;
-  afficherPseudo(profil.pseudo_site);
+  let profilFinal = profil;
+  if (!profilFinal && typeof userOrId !== 'string') {
+    profilFinal = await creerProfilDepuisUtilisateur(userOrId);
+  }
+
+  if (!profilFinal) {
+    afficherBoutonConnexion();
+    return;
+  }
+
+  profilUtilisateur = profilFinal;
+  afficherPseudo(profilFinal.pseudo_site);
+}
+
+function nettoyerPseudo(texte) {
+  return (texte || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-zA-Z0-9_]/g, '')
+    .slice(0, 18);
+}
+
+function pseudoDepuisUtilisateur(user) {
+  const md = user?.user_metadata || {};
+  const localPart = (user?.email || '').split('@')[0] || '';
+  const base = md.preferred_username || md.user_name || md.name || localPart || 'joueur';
+  const nettoye = nettoyerPseudo(base);
+  return nettoye.length >= 3 ? nettoye : `joueur${Math.floor(Math.random() * 9000 + 1000)}`;
+}
+
+async function creerProfilDepuisUtilisateur(user) {
+  if (!user?.id || !user?.email) return null;
+
+  const md = user.user_metadata || {};
+  const basePseudo = pseudoDepuisUtilisateur(user);
+  const nomPrenom = md.full_name || md.name || basePseudo;
+  const pseudoMinecraft = md.preferred_username || basePseudo;
+
+  for (let i = 0; i < 5; i++) {
+    const suffixe = i === 0 ? '' : String(Math.floor(Math.random() * 900 + 100));
+    const pseudo = `${basePseudo}${suffixe}`.slice(0, 18);
+
+    const { error: errInsert } = await _supabase.from('profils').insert({
+      id: user.id,
+      pseudo_site: pseudo,
+      nom_prenom: nomPrenom,
+      email: user.email,
+      pseudo_minecraft: pseudoMinecraft
+    });
+
+    if (!errInsert) {
+      const { data: profil } = await _supabase
+        .from('profils')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+      return profil || null;
+    }
+
+    // Retry with another pseudo when unique constraint is hit.
+    if (!String(errInsert.message || '').includes('profils_pseudo_site_key')) {
+      return null;
+    }
+  }
+
+  return null;
 }
 
 function afficherBoutonConnexion() {
@@ -216,7 +332,7 @@ async function connexionGoogle() {
   const { error } = await _supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: window.location.origin
+      redirectTo: window.location.origin + window.location.pathname
     }
   });
   if (error) afficherErreur('err-connexion', traduireErreur(error.message));
