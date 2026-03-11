@@ -8,7 +8,7 @@ const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
     flowType: 'pkce',
     persistSession: true,
     autoRefreshToken: true,
-    detectSessionInUrl: false
+    detectSessionInUrl: true
   }
 });
 
@@ -430,7 +430,7 @@ async function soumettreInscription(e) {
 async function connexionGoogle() {
   const callbackUrl = window.location.hostname === 'localhost'
     ? `${window.location.origin}/auth-callback.html`
-    : 'https://bloccoin.pages.dev/auth-callback.html';
+    : `${window.location.origin}/index.html`;
 
   const { error } = await _supabase.auth.signInWithOAuth({
     provider: 'google',
