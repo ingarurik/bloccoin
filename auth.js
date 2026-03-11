@@ -8,7 +8,7 @@ const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
     flowType: 'pkce',
     persistSession: true,
     autoRefreshToken: true,
-    detectSessionInUrl: true
+    detectSessionInUrl: false
   }
 });
 
@@ -35,6 +35,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   initialiserMenuCompte();
 
   try {
+    await gererRetourOAuth();
     afficherErreurOAuthRetour();
     await verifierSession();
   } catch (err) {
@@ -42,6 +43,40 @@ document.addEventListener('DOMContentLoaded', async () => {
     afficherBoutonConnexion();
   }
 });
+
+async function gererRetourOAuth() {
+  const url = new URL(window.location.href);
+  const code = url.searchParams.get('code');
+  if (!code) return;
+
+  const { data: { session } } = await _supabase.auth.getSession();
+  if (!session) {
+    const { error } = await _supabase.auth.exchangeCodeForSession(code);
+    if (error) {
+      afficherErreur('err-connexion', traduireErreur(error.message));
+      ouvrirModal();
+    }
+  }
+
+  nettoyerParamsOAuthDansUrl();
+}
+
+function nettoyerParamsOAuthDansUrl() {
+  const url = new URL(window.location.href);
+  const paramsOAuth = [
+    'code',
+    'state',
+    'error',
+    'error_code',
+    'error_description',
+    'provider_token',
+    'provider_refresh_token'
+  ];
+
+  paramsOAuth.forEach((p) => url.searchParams.delete(p));
+  const urlNettoyee = url.pathname + (url.search ? url.search : '') + (url.hash ? url.hash : '');
+  window.history.replaceState({}, document.title, urlNettoyee);
+}
 
 function afficherErreurOAuthRetour() {
   const params = new URLSearchParams(window.location.search);
@@ -58,8 +93,7 @@ function afficherErreurOAuthRetour() {
   afficherErreur('err-connexion', traduireErreur(message));
   ouvrirModal();
 
-  // Remove oauth error params from URL for cleaner refreshes.
-  window.history.replaceState({}, document.title, window.location.pathname);
+  nettoyerParamsOAuthDansUrl();
 }
 
 async function verifierSession() {
