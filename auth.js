@@ -44,12 +44,56 @@ let profilUtilisateur = null;
 let authStateProcessing = false;
 let sessionCheckPromise = null;
 let fileAuthQueue = Promise.resolve();
-window.__AUTH_BUILD__ = '20260311-22';
+window.__AUTH_BUILD__ = '20260311-23';
 window.AUTH_BUILD = window.__AUTH_BUILD__;
 
 function executerAuthEnSerie(tache) {
   fileAuthQueue = fileAuthQueue.then(tache, tache);
   return fileAuthQueue;
+}
+
+function lireSessionStockee() {
+  const emplacements = [window.localStorage, window.sessionStorage];
+
+  for (const stockage of emplacements) {
+    try {
+      const brut = stockage.getItem(SUPABASE_AUTH_STORAGE_KEY);
+      if (!brut) continue;
+
+      const data = JSON.parse(brut);
+      const session = data?.currentSession || data?.session || data;
+      if (sessionValide(session)) return session;
+    } catch (_) {
+      // Ignore malformed storage value.
+    }
+  }
+
+  return null;
+}
+
+async function getUserParApi(accessToken, timeoutMs = 7000) {
+  if (!accessToken) return null;
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const reponse = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+      method: 'GET',
+      headers: {
+        apikey: SUPABASE_ANON,
+        Authorization: `Bearer ${accessToken}`
+      },
+      signal: controller.signal
+    });
+
+    if (!reponse.ok) return null;
+    return await reponse.json();
+  } catch (_) {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 function sessionValide(session) {
@@ -59,6 +103,11 @@ function sessionValide(session) {
 function estErreurVerrouSupabase(err) {
   const message = String(err?.message || err || '');
   return err?.name === 'AbortError' || message.includes('Lock broken by another request');
+}
+
+function estErreurTimeoutAuth(err) {
+  const message = String(err?.message || err || '');
+  return message.includes('timeout:getSession') || message.includes('timeout:getUser');
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -131,6 +180,11 @@ function nettoyerVerrouAuthOrphelin() {
 }
 
 async function getSessionFiable(timeoutMs = 7000) {
+  const sessionStockee = lireSessionStockee();
+  if (sessionValide(sessionStockee)) {
+    return { data: { session: sessionStockee } };
+  }
+
   try {
     return await executerAuthEnSerie(() => avecTimeout(_supabase.auth.getSession(), timeoutMs, 'getSession'));
   } catch (err) {
@@ -139,11 +193,21 @@ async function getSessionFiable(timeoutMs = 7000) {
     }
 
     nettoyerVerrouAuthOrphelin();
-    return await executerAuthEnSerie(() => avecTimeout(_supabase.auth.getSession(), timeoutMs, 'getSession'));
+    try {
+      return await executerAuthEnSerie(() => avecTimeout(_supabase.auth.getSession(), timeoutMs, 'getSession'));
+    } catch (_) {
+      return { data: { session: null } };
+    }
   }
 }
 
 async function getUserFiable(timeoutMs = 7000) {
+  const sessionStockee = lireSessionStockee();
+  const userApi = await getUserParApi(sessionStockee?.access_token, timeoutMs);
+  if (userApi?.id) {
+    return { data: { user: userApi } };
+  }
+
   try {
     return await executerAuthEnSerie(() => avecTimeout(_supabase.auth.getUser(), timeoutMs, 'getUser'));
   } catch (err) {
@@ -152,7 +216,11 @@ async function getUserFiable(timeoutMs = 7000) {
     }
 
     nettoyerVerrouAuthOrphelin();
-    return await executerAuthEnSerie(() => avecTimeout(_supabase.auth.getUser(), timeoutMs, 'getUser'));
+    try {
+      return await executerAuthEnSerie(() => avecTimeout(_supabase.auth.getUser(), timeoutMs, 'getUser'));
+    } catch (_) {
+      return { data: { user: null } };
+    }
   }
 }
 
@@ -177,7 +245,7 @@ async function forcerSynchroPostOAuth() {
 
       // Keep a single auth API call here to reduce lock contention.
     } catch (err) {
-      if (!estErreurVerrouSupabase(err)) {
+      if (!estErreurVerrouSupabase(err) && !estErreurTimeoutAuth(err)) {
         console.warn('Erreur synchro OAuth:', err);
       }
       // Keep retrying until timeout.
@@ -238,7 +306,7 @@ async function verifierSession() {
 
     afficherBoutonConnexion();
   } catch (err) {
-    if (estErreurVerrouSupabase(err)) {
+    if (estErreurVerrouSupabase(err) || estErreurTimeoutAuth(err)) {
       // Do not force logout UI on transient auth lock races.
       return;
     }
