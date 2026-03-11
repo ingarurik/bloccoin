@@ -31,29 +31,11 @@ function traduireErreur(message) {
 let profilUtilisateur = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
-  await gererRetourOAuth();
   afficherErreurOAuthRetour();
   await verifierSession();
   initialiserModal();
   initialiserMenuCompte();
 });
-
-async function gererRetourOAuth() {
-  const params = new URLSearchParams(window.location.search);
-  const code = params.get('code');
-
-  if (!code) return;
-
-  const { error } = await _supabase.auth.exchangeCodeForSession(code);
-
-  // Clean the URL so reloading the page does not retry code exchange.
-  window.history.replaceState({}, document.title, window.location.pathname);
-
-  if (error) {
-    afficherErreur('err-connexion', traduireErreur(error.message));
-    ouvrirModal();
-  }
-}
 
 function afficherErreurOAuthRetour() {
   const params = new URLSearchParams(window.location.search);
@@ -77,7 +59,7 @@ function afficherErreurOAuthRetour() {
 async function verifierSession() {
   const { data: { session } } = await _supabase.auth.getSession();
   if (session) {
-    await chargerProfilEtAfficher(session.user.id);
+    await chargerProfilEtAfficher(session.user);
   } else {
     afficherBoutonConnexion();
   }
@@ -95,6 +77,7 @@ _supabase.auth.onAuthStateChange(async (event, session) => {
 
 async function chargerProfilEtAfficher(userOrId) {
   const userId = typeof userOrId === 'string' ? userOrId : userOrId?.id;
+  const userObj = typeof userOrId === 'string' ? null : userOrId;
   if (!userId) {
     afficherBoutonConnexion();
     return;
@@ -108,6 +91,10 @@ async function chargerProfilEtAfficher(userOrId) {
 
   // New OAuth users can exist in auth.users without a row in profils.
   if (error && error.code !== 'PGRST116') {
+    if (userObj) {
+      afficherPseudo(pseudoAffichageDepuisUtilisateur(userObj));
+      return;
+    }
     afficherBoutonConnexion();
     return;
   }
@@ -118,12 +105,24 @@ async function chargerProfilEtAfficher(userOrId) {
   }
 
   if (!profilFinal) {
+    if (userObj) {
+      afficherPseudo(pseudoAffichageDepuisUtilisateur(userObj));
+      return;
+    }
     afficherBoutonConnexion();
     return;
   }
 
   profilUtilisateur = profilFinal;
   afficherPseudo(profilFinal.pseudo_site);
+}
+
+function pseudoAffichageDepuisUtilisateur(user) {
+  return (
+    user?.user_metadata?.name ||
+    user?.user_metadata?.preferred_username ||
+    ((user?.email || '').split('@')[0] || 'Joueur')
+  );
 }
 
 function nettoyerPseudo(texte) {
