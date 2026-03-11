@@ -3,7 +3,7 @@
 const SUPABASE_URL = 'https://cimyrkybpnssyeyobyrh.supabase.co';
 const SUPABASE_ANON = 'sb_publishable_XAfHoy6vcPskEW1vNJaAkA_92iGeE-v';
 
-const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
+const _supabase = window.__BLOCCOIN_SUPABASE__ || supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
   auth: {
     flowType: 'pkce',
     persistSession: true,
@@ -11,6 +11,9 @@ const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
     detectSessionInUrl: true
   }
 });
+
+window.__BLOCCOIN_SUPABASE__ = _supabase;
+window.__bloccoinAuthClient = _supabase;
 
 const ERREURS = {
   'User already registered': 'Cette adresse email est deja utilisee.',
@@ -31,7 +34,11 @@ function traduireErreur(message) {
 let profilUtilisateur = null;
 let authStateProcessing = false;
 let sessionCheckPromise = null;
-window.__AUTH_BUILD__ = '20260311-17';
+window.__AUTH_BUILD__ = '20260311-18';
+
+function sessionValide(session) {
+  return !!(session && session.user && session.access_token);
+}
 
 function estErreurVerrouSupabase(err) {
   const message = String(err?.message || err || '');
@@ -91,7 +98,7 @@ async function forcerSynchroPostOAuth() {
   while (Date.now() - debut < timeoutMs) {
     try {
       const { data: { session } } = await _supabase.auth.getSession();
-      if (session?.user) {
+      if (sessionValide(session)) {
         await chargerProfilEtAfficher(session.user);
         nettoyerParamsOAuthDansUrl();
         return true;
@@ -114,7 +121,7 @@ async function forcerSynchroPostOAuth() {
 async function recupererSessionAvecRetry(maxTentatives = 8, delaiMs = 250) {
   for (let i = 0; i < maxTentatives; i++) {
     const { data: { session } } = await _supabase.auth.getSession();
-    if (session) return session;
+    if (sessionValide(session)) return session;
     await attendre(delaiMs);
   }
   return null;
@@ -153,7 +160,7 @@ async function verifierSession() {
       nettoyerParamsOAuthDansUrl();
     }
 
-    if (session) {
+    if (sessionValide(session)) {
       await chargerProfilEtAfficher(session.user);
       return;
     }
@@ -617,3 +624,28 @@ function setChargement(formId, actif) {
     btn.textContent = actif ? 'Chargement...' : (btn.dataset.label || 'Valider');
   }
 }
+
+window.__bloccoinAuthCheck = async function __bloccoinAuthCheck() {
+  try {
+    const { data: { session } } = await _supabase.auth.getSession();
+    let user = null;
+    try {
+      ({ data: { user } } = await _supabase.auth.getUser());
+    } catch (_) {
+      // Ignore transient lock errors in debug helper.
+    }
+
+    return {
+      build: window.__AUTH_BUILD__,
+      session: sessionValide(session),
+      user: !!user
+    };
+  } catch (err) {
+    return {
+      build: window.__AUTH_BUILD__,
+      session: false,
+      user: false,
+      error: String(err?.message || err || 'unknown')
+    };
+  }
+};
