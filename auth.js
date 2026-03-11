@@ -37,6 +37,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   try {
     afficherErreurOAuthRetour();
+    if (urlIndiqueRetourOAuth()) {
+      await forcerSynchroPostOAuth();
+    }
     await verifierSession();
     demarrerResynchronisationSession();
   } catch (err) {
@@ -66,6 +69,41 @@ function nettoyerParamsOAuthDansUrl() {
 
 function attendre(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function urlIndiqueRetourOAuth() {
+  const params = new URLSearchParams(window.location.search);
+  return params.has('code') || params.has('state') || params.get('auth_return') === '1';
+}
+
+async function forcerSynchroPostOAuth() {
+  const timeoutMs = 15000;
+  const delaiMs = 300;
+  const debut = Date.now();
+
+  while (Date.now() - debut < timeoutMs) {
+    try {
+      const { data: { session } } = await _supabase.auth.getSession();
+      if (session?.user) {
+        await chargerProfilEtAfficher(session.user);
+        nettoyerParamsOAuthDansUrl();
+        return true;
+      }
+
+      const { data: { user }, error } = await _supabase.auth.getUser();
+      if (!error && user) {
+        await chargerProfilEtAfficher(user);
+        nettoyerParamsOAuthDansUrl();
+        return true;
+      }
+    } catch (_) {
+      // Keep retrying until timeout.
+    }
+
+    await attendre(delaiMs);
+  }
+
+  return false;
 }
 
 async function recupererSessionAvecRetry(maxTentatives = 8, delaiMs = 250) {
@@ -111,6 +149,13 @@ async function verifierSession() {
       await chargerProfilEtAfficher(session.user);
       return;
     }
+
+    const { data: { user } } = await _supabase.auth.getUser();
+    if (user) {
+      await chargerProfilEtAfficher(user);
+      return;
+    }
+
     afficherBoutonConnexion();
   } catch (err) {
     console.error('Erreur verification session:', err);
