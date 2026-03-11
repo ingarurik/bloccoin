@@ -34,7 +34,8 @@ function traduireErreur(message) {
 let profilUtilisateur = null;
 let authStateProcessing = false;
 let sessionCheckPromise = null;
-window.__AUTH_BUILD__ = '20260311-18';
+window.__AUTH_BUILD__ = '20260311-19';
+window.AUTH_BUILD = window.__AUTH_BUILD__;
 
 function sessionValide(session) {
   return !!(session && session.user && session.access_token);
