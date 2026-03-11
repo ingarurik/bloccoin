@@ -402,10 +402,14 @@ async function soumettreInscription(e) {
 }
 
 async function connexionGoogle() {
+  const callbackUrl = window.location.hostname === 'localhost'
+    ? `${window.location.origin}/auth-callback.html`
+    : 'https://bloccoin.pages.dev/auth-callback.html';
+
   const { error } = await _supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: window.location.origin + '/auth-callback.html'
+      redirectTo: callbackUrl
     }
   });
   if (error) afficherErreur('err-connexion', traduireErreur(error.message));

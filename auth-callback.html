@@ -37,7 +37,7 @@
       {
         auth: {
           flowType: 'pkce',
-          detectSessionInUrl: true,
+          detectSessionInUrl: false,
           persistSession: true,
           autoRefreshToken: true
         }
@@ -48,18 +48,26 @@
       window.location.replace('./index.html');
     }
 
+    // Fallback de sécurité: si Supabase tarde trop, on revient quand même à l'accueil.
+    const hardTimeout = setTimeout(rentrerAccueil, 7000);
+
     // Échange explicite du code PKCE → crée la session dans localStorage
     (async () => {
       const code = new URLSearchParams(window.location.search).get('code');
       if (code) {
         try {
-          await _sb.auth.exchangeCodeForSession(code);
+          await Promise.race([
+            _sb.auth.exchangeCodeForSession(code),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout PKCE')), 4500))
+          ]);
         } catch (e) {
           console.error('Erreur échange PKCE:', e);
         }
       }
+    })().finally(() => {
+      clearTimeout(hardTimeout);
       rentrerAccueil();
-    })();
+    });
   </script>
 </body>
 </html>
