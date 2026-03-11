@@ -8,7 +8,7 @@ const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
     flowType: 'pkce',
     persistSession: true,
     autoRefreshToken: true,
-    detectSessionInUrl: false
+    detectSessionInUrl: true
   }
 });
 
@@ -35,7 +35,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   initialiserMenuCompte();
 
   try {
-    await gererRetourOAuth();
     afficherErreurOAuthRetour();
     await verifierSession();
   } catch (err) {
@@ -43,23 +42,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     afficherBoutonConnexion();
   }
 });
-
-async function gererRetourOAuth() {
-  const url = new URL(window.location.href);
-  const code = url.searchParams.get('code');
-  if (!code) return;
-
-  const { data: { session } } = await _supabase.auth.getSession();
-  if (!session) {
-    const { error } = await _supabase.auth.exchangeCodeForSession(code);
-    if (error) {
-      afficherErreur('err-connexion', traduireErreur(error.message));
-      ouvrirModal();
-    }
-  }
-
-  nettoyerParamsOAuthDansUrl();
-}
 
 function nettoyerParamsOAuthDansUrl() {
   const url = new URL(window.location.href);
@@ -112,6 +94,7 @@ async function verifierSession() {
 
 _supabase.auth.onAuthStateChange(async (event, session) => {
   if (event === 'SIGNED_IN' && session) {
+    nettoyerParamsOAuthDansUrl();
     await chargerProfilEtAfficher(session.user);
     fermerModal();
   } else if (event === 'SIGNED_OUT') {
