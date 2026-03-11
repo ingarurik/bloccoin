@@ -38,6 +38,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   try {
     afficherErreurOAuthRetour();
     await verifierSession();
+    demarrerResynchronisationSession();
   } catch (err) {
     console.error('Erreur initialisation auth:', err);
     afficherBoutonConnexion();
@@ -115,6 +116,38 @@ async function verifierSession() {
     console.error('Erreur verification session:', err);
     afficherBoutonConnexion();
   }
+}
+
+function demarrerResynchronisationSession() {
+  let tentatives = 0;
+  const maxTentatives = 10;
+  const interval = setInterval(async () => {
+    tentatives += 1;
+
+    const btnConnexion = document.getElementById('btn-connexion');
+    const dejaConnecte = btnConnexion && btnConnexion.style.display === 'none';
+    if (dejaConnecte) {
+      clearInterval(interval);
+      return;
+    }
+
+    await verifierSession();
+
+    if (tentatives >= maxTentatives) {
+      clearInterval(interval);
+    }
+  }, 500);
+
+  // Re-synchronise quand l'utilisateur revient sur l'onglet.
+  window.addEventListener('focus', () => {
+    verifierSession();
+  });
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      verifierSession();
+    }
+  });
 }
 
 _supabase.auth.onAuthStateChange(async (event, session) => {
