@@ -4,7 +4,7 @@ const SUPABASE_URL = 'https://cimyrkybpnssyeyobyrh.supabase.co';
 const SUPABASE_ANON = 'sb_publishable_XAfHoy6vcPskEW1vNJaAkA_92iGeE-v';
 const SUPABASE_AUTH_STORAGE_KEY = 'sb-cimyrkybpnssyeyobyrh-auth-token';
 const SUPABASE_AUTH_LOCK_KEY = `lock:${SUPABASE_AUTH_STORAGE_KEY}`;
-const COMPTE_UPDATE_TIMEOUT_MS = 12000;
+const COMPTE_UPDATE_TIMEOUT_MS = 25000;
 
 async function verrouAuthLocal(_name, _acquireTimeout, execute) {
   return execute();
@@ -46,7 +46,7 @@ let profilUtilisateur = null;
 let authStateProcessing = false;
 let sessionCheckPromise = null;
 let fileAuthQueue = Promise.resolve();
-window.__AUTH_BUILD__ = '20260311-29';
+window.__AUTH_BUILD__ = '20260311-30';
 window.AUTH_BUILD = window.__AUTH_BUILD__;
 
 function executerAuthEnSerie(tache) {
@@ -173,6 +173,21 @@ function avecTimeout(promesse, ms, libelle) {
         reject(erreur);
       });
   });
+}
+
+async function executerOperationCompte(operation) {
+  try {
+    return await avecTimeout(operation(), COMPTE_UPDATE_TIMEOUT_MS, 'compte_update');
+  } catch (err) {
+    if (!estErreurTimeoutAuth(err) && !String(err?.message || '').includes('timeout:compte_update')) {
+      throw err;
+    }
+
+    // Try once again after clearing possible stale auth lock.
+    nettoyerVerrouAuthOrphelin();
+    await attendre(300);
+    return await avecTimeout(operation(), COMPTE_UPDATE_TIMEOUT_MS, 'compte_update');
+  }
 }
 
 function nettoyerVerrouAuthOrphelin() {
@@ -862,13 +877,11 @@ async function soumettreCompte(e) {
 
   try {
     if (mdp) {
-      const { error: errAuthCourant } = await avecTimeout(
+      const { error: errAuthCourant } = await executerOperationCompte(() =>
         _supabase.auth.signInWithPassword({
           email: user.email || email,
           password: mdp_actuel
-        }),
-        COMPTE_UPDATE_TIMEOUT_MS,
-        'compte_update'
+        })
       );
       if (errAuthCourant) {
         throw new Error('Ancien mot de passe incorrect.');
@@ -876,20 +889,12 @@ async function soumettreCompte(e) {
     }
 
     if (email !== (user.email || '')) {
-      const { error: errEmail } = await avecTimeout(
-        _supabase.auth.updateUser({ email }),
-        COMPTE_UPDATE_TIMEOUT_MS,
-        'compte_update'
-      );
+      const { error: errEmail } = await executerOperationCompte(() => _supabase.auth.updateUser({ email }));
       if (errEmail) throw errEmail;
     }
 
     if (mdp) {
-      const { error: errMdp } = await avecTimeout(
-        _supabase.auth.updateUser({ password: mdp }),
-        COMPTE_UPDATE_TIMEOUT_MS,
-        'compte_update'
-      );
+      const { error: errMdp } = await executerOperationCompte(() => _supabase.auth.updateUser({ password: mdp }));
       if (errMdp) throw errMdp;
     }
 
@@ -901,14 +906,12 @@ async function soumettreCompte(e) {
       email
     };
 
-    const { data: profilSauve, error: errProfil } = await avecTimeout(
+    const { data: profilSauve, error: errProfil } = await executerOperationCompte(() =>
       _supabase
         .from('profils')
         .upsert(profilMaj)
         .select('*')
-        .single(),
-      COMPTE_UPDATE_TIMEOUT_MS,
-      'compte_update'
+        .single()
     );
 
     if (errProfil) throw errProfil;
