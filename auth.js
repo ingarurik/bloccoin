@@ -8,7 +8,7 @@ const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
     flowType: 'pkce',
     persistSession: true,
     autoRefreshToken: true,
-    detectSessionInUrl: true
+    detectSessionInUrl: false
   }
 });
 
@@ -359,7 +359,7 @@ async function connexionGoogle() {
   const { error } = await _supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: window.location.origin + window.location.pathname
+      redirectTo: window.location.origin + '/auth-callback.html'
     }
   });
   if (error) afficherErreur('err-connexion', traduireErreur(error.message));
