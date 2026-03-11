@@ -247,7 +247,7 @@ function afficherPseudo(valeurAffichee) {
 
   if (btn) btn.style.display = 'none';
   if (btnCompte) {
-    btnCompte.style.display = '';
+    btnCompte.style.display = 'inline-block';
     btnCompte.textContent = `Compte: ${valeurAffichee}`;
   }
   if (zone) zone.style.display = 'none';
