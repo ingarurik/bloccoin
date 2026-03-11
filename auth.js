@@ -225,6 +225,7 @@ function afficherBoutonConnexion() {
   if (btnCompte) {
     btnCompte.style.display = 'none';
     btnCompte.textContent = 'Compte';
+    btnCompte.classList.remove('connecte');
   }
   if (zone) zone.style.display = 'none';
   fermerFenetreCompte();
@@ -248,6 +249,7 @@ function afficherPseudo(valeurAffichee) {
   if (btn) btn.style.display = 'none';
   if (btnCompte) {
     btnCompte.style.display = 'inline-block';
+    btnCompte.classList.add('connecte');
     btnCompte.textContent = `Compte: ${valeurAffichee}`;
   }
   if (zone) zone.style.display = 'none';
