@@ -34,7 +34,7 @@ function traduireErreur(message) {
 let profilUtilisateur = null;
 let authStateProcessing = false;
 let sessionCheckPromise = null;
-window.__AUTH_BUILD__ = '20260311-19';
+window.__AUTH_BUILD__ = '20260311-20';
 window.AUTH_BUILD = window.__AUTH_BUILD__;
 
 function sessionValide(session) {
@@ -84,6 +84,21 @@ function nettoyerParamsOAuthDansUrl() {
 
 function attendre(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function avecTimeout(promesse, ms, libelle) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(`timeout:${libelle}`)), ms);
+    Promise.resolve(promesse)
+      .then((valeur) => {
+        clearTimeout(timer);
+        resolve(valeur);
+      })
+      .catch((erreur) => {
+        clearTimeout(timer);
+        reject(erreur);
+      });
+  });
 }
 
 function urlIndiqueRetourOAuth() {
@@ -627,26 +642,30 @@ function setChargement(formId, actif) {
 }
 
 window.__bloccoinAuthCheck = async function __bloccoinAuthCheck() {
-  try {
-    const { data: { session } } = await _supabase.auth.getSession();
-    let user = null;
-    try {
-      ({ data: { user } } = await _supabase.auth.getUser());
-    } catch (_) {
-      // Ignore transient lock errors in debug helper.
-    }
+  let session = null;
+  let user = null;
+  let sessionError = null;
+  let userError = null;
 
-    return {
-      build: window.__AUTH_BUILD__,
-      session: sessionValide(session),
-      user: !!user
-    };
+  try {
+    const sessionResp = await avecTimeout(_supabase.auth.getSession(), 4000, 'getSession');
+    session = sessionResp?.data?.session || null;
   } catch (err) {
-    return {
-      build: window.__AUTH_BUILD__,
-      session: false,
-      user: false,
-      error: String(err?.message || err || 'unknown')
-    };
+    sessionError = String(err?.message || err || 'unknown');
   }
+
+  try {
+    const userResp = await avecTimeout(_supabase.auth.getUser(), 4000, 'getUser');
+    user = userResp?.data?.user || null;
+  } catch (err) {
+    userError = String(err?.message || err || 'unknown');
+  }
+
+  return {
+    build: window.__AUTH_BUILD__,
+    session: sessionValide(session),
+    user: !!user,
+    sessionError,
+    userError
+  };
 };
