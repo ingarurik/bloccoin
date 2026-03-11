@@ -48,19 +48,18 @@
       window.location.replace('./index.html');
     }
 
-    _sb.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' && session) {
-        rentrerAccueil();
+    // Échange explicite du code PKCE → crée la session dans localStorage
+    (async () => {
+      const code = new URLSearchParams(window.location.search).get('code');
+      if (code) {
+        try {
+          await _sb.auth.exchangeCodeForSession(code);
+        } catch (e) {
+          console.error('Erreur échange PKCE:', e);
+        }
       }
-    });
-
-    // Si la session est déjà établie (rechargement accidentel de cette page)
-    _sb.auth.getSession().then(({ data: { session } }) => {
-      if (session) rentrerAccueil();
-    });
-
-    // Fallback : si rien ne se passe en 8s, on renvoie quand même vers l'accueil
-    setTimeout(rentrerAccueil, 8000);
+      rentrerAccueil();
+    })();
   </script>
 </body>
 </html>
