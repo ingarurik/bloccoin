@@ -53,12 +53,27 @@ function nettoyerParamsOAuthDansUrl() {
     'error_code',
     'error_description',
     'provider_token',
-    'provider_refresh_token'
+    'provider_refresh_token',
+    'auth_return',
+    'ts'
   ];
 
   paramsOAuth.forEach((p) => url.searchParams.delete(p));
   const urlNettoyee = url.pathname + (url.search ? url.search : '') + (url.hash ? url.hash : '');
   window.history.replaceState({}, document.title, urlNettoyee);
+}
+
+function attendre(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function recupererSessionAvecRetry(maxTentatives = 8, delaiMs = 250) {
+  for (let i = 0; i < maxTentatives; i++) {
+    const { data: { session } } = await _supabase.auth.getSession();
+    if (session) return session;
+    await attendre(delaiMs);
+  }
+  return null;
 }
 
 function afficherErreurOAuthRetour() {
@@ -81,7 +96,16 @@ function afficherErreurOAuthRetour() {
 
 async function verifierSession() {
   try {
-    const { data: { session } } = await _supabase.auth.getSession();
+    const params = new URLSearchParams(window.location.search);
+    const retourOAuth = params.get('auth_return') === '1';
+    const session = retourOAuth
+      ? await recupererSessionAvecRetry(12, 250)
+      : (await _supabase.auth.getSession()).data.session;
+
+    if (retourOAuth) {
+      nettoyerParamsOAuthDansUrl();
+    }
+
     if (session) {
       await chargerProfilEtAfficher(session.user);
       return;

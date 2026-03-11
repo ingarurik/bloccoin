@@ -56,7 +56,7 @@
     );
 
     function rentrerAccueil() {
-      window.location.replace('./index.html');
+      window.location.replace(`./index.html?auth_return=1&ts=${Date.now()}`);
     }
 
     function afficherErreurCallback(message) {
