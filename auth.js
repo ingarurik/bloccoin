@@ -566,6 +566,16 @@ function formatterAffichageEmail(email) {
   return brut.split('@')[0] || brut;
 }
 
+function afficherEditionCompteDesactivee() {
+  const el = document.getElementById('err-compte');
+  if (!el) return;
+  el.textContent = 'La modification des informations est desactivee temporairement.';
+  el.style.color = '#ffcf8a';
+  el.style.borderColor = 'rgba(240,192,64,0.28)';
+  el.style.background = 'rgba(240,192,64,0.09)';
+  el.style.display = 'block';
+}
+
 function mettreAjourResumeCompte(profil, user) {
   const resumePseudo = document.getElementById('compte-resume-pseudo');
   const resumeMc = document.getElementById('compte-resume-mc');
@@ -625,6 +635,7 @@ async function chargerDonneesCompte() {
   profilUtilisateur = profil;
   remplirFormulaireCompte(profil, user);
   viderErreurs();
+  afficherEditionCompteDesactivee();
 }
 
 function afficherPseudo(valeurAffichee) {
