@@ -5,13 +5,19 @@ const SUPABASE_ANON = 'sb_publishable_XAfHoy6vcPskEW1vNJaAkA_92iGeE-v';
 const SUPABASE_AUTH_STORAGE_KEY = 'sb-cimyrkybpnssyeyobyrh-auth-token';
 const SUPABASE_AUTH_LOCK_KEY = `lock:${SUPABASE_AUTH_STORAGE_KEY}`;
 
+async function verrouAuthLocal(_name, _acquireTimeout, execute) {
+  return execute();
+}
+
 const _supabase = window.__BLOCCOIN_SUPABASE__ || supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
   auth: {
     flowType: 'pkce',
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,
-    multiTab: false
+    multiTab: false,
+    storageKey: SUPABASE_AUTH_STORAGE_KEY,
+    lock: verrouAuthLocal
   }
 });
 
@@ -37,8 +43,14 @@ function traduireErreur(message) {
 let profilUtilisateur = null;
 let authStateProcessing = false;
 let sessionCheckPromise = null;
-window.__AUTH_BUILD__ = '20260311-21';
+let fileAuthQueue = Promise.resolve();
+window.__AUTH_BUILD__ = '20260311-22';
 window.AUTH_BUILD = window.__AUTH_BUILD__;
+
+function executerAuthEnSerie(tache) {
+  fileAuthQueue = fileAuthQueue.then(tache, tache);
+  return fileAuthQueue;
+}
 
 function sessionValide(session) {
   return !!(session && session.user && session.access_token);
@@ -120,27 +132,27 @@ function nettoyerVerrouAuthOrphelin() {
 
 async function getSessionFiable(timeoutMs = 7000) {
   try {
-    return await avecTimeout(_supabase.auth.getSession(), timeoutMs, 'getSession');
+    return await executerAuthEnSerie(() => avecTimeout(_supabase.auth.getSession(), timeoutMs, 'getSession'));
   } catch (err) {
     if (!estErreurVerrouSupabase(err) && !String(err?.message || '').includes('timeout:getSession')) {
       throw err;
     }
 
     nettoyerVerrouAuthOrphelin();
-    return await avecTimeout(_supabase.auth.getSession(), timeoutMs, 'getSession');
+    return await executerAuthEnSerie(() => avecTimeout(_supabase.auth.getSession(), timeoutMs, 'getSession'));
   }
 }
 
 async function getUserFiable(timeoutMs = 7000) {
   try {
-    return await avecTimeout(_supabase.auth.getUser(), timeoutMs, 'getUser');
+    return await executerAuthEnSerie(() => avecTimeout(_supabase.auth.getUser(), timeoutMs, 'getUser'));
   } catch (err) {
     if (!estErreurVerrouSupabase(err) && !String(err?.message || '').includes('timeout:getUser')) {
       throw err;
     }
 
     nettoyerVerrouAuthOrphelin();
-    return await avecTimeout(_supabase.auth.getUser(), timeoutMs, 'getUser');
+    return await executerAuthEnSerie(() => avecTimeout(_supabase.auth.getUser(), timeoutMs, 'getUser'));
   }
 }
 
