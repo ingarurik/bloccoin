@@ -4,6 +4,7 @@ const SUPABASE_URL = 'https://cimyrkybpnssyeyobyrh.supabase.co';
 const SUPABASE_ANON = 'sb_publishable_XAfHoy6vcPskEW1vNJaAkA_92iGeE-v';
 const SUPABASE_AUTH_STORAGE_KEY = 'sb-cimyrkybpnssyeyobyrh-auth-token';
 const SUPABASE_AUTH_LOCK_KEY = `lock:${SUPABASE_AUTH_STORAGE_KEY}`;
+const COMPTE_UPDATE_TIMEOUT_MS = 12000;
 
 async function verrouAuthLocal(_name, _acquireTimeout, execute) {
   return execute();
@@ -30,7 +31,8 @@ const ERREURS = {
   'Email not confirmed': 'Ton email n\'est pas encore confirme. Verifie ta boite mail.',
   'Password should be at least 6 characters': 'Le mot de passe doit contenir au moins 6 caracteres.',
   'Unable to validate email address': 'Adresse email invalide.',
-  'duplicate key value violates unique constraint "profils_pseudo_site_key"': 'Ce pseudo est deja pris.'
+  'duplicate key value violates unique constraint "profils_pseudo_site_key"': 'Ce pseudo est deja pris.',
+  'timeout:compte_update': 'La mise a jour a mis trop de temps. Reessaie dans quelques secondes.'
 };
 
 function traduireErreur(message) {
@@ -44,7 +46,7 @@ let profilUtilisateur = null;
 let authStateProcessing = false;
 let sessionCheckPromise = null;
 let fileAuthQueue = Promise.resolve();
-window.__AUTH_BUILD__ = '20260311-28';
+window.__AUTH_BUILD__ = '20260311-29';
 window.AUTH_BUILD = window.__AUTH_BUILD__;
 
 function executerAuthEnSerie(tache) {
@@ -860,22 +862,34 @@ async function soumettreCompte(e) {
 
   try {
     if (mdp) {
-      const { error: errAuthCourant } = await _supabase.auth.signInWithPassword({
-        email: user.email || email,
-        password: mdp_actuel
-      });
+      const { error: errAuthCourant } = await avecTimeout(
+        _supabase.auth.signInWithPassword({
+          email: user.email || email,
+          password: mdp_actuel
+        }),
+        COMPTE_UPDATE_TIMEOUT_MS,
+        'compte_update'
+      );
       if (errAuthCourant) {
         throw new Error('Ancien mot de passe incorrect.');
       }
     }
 
     if (email !== (user.email || '')) {
-      const { error: errEmail } = await _supabase.auth.updateUser({ email });
+      const { error: errEmail } = await avecTimeout(
+        _supabase.auth.updateUser({ email }),
+        COMPTE_UPDATE_TIMEOUT_MS,
+        'compte_update'
+      );
       if (errEmail) throw errEmail;
     }
 
     if (mdp) {
-      const { error: errMdp } = await _supabase.auth.updateUser({ password: mdp });
+      const { error: errMdp } = await avecTimeout(
+        _supabase.auth.updateUser({ password: mdp }),
+        COMPTE_UPDATE_TIMEOUT_MS,
+        'compte_update'
+      );
       if (errMdp) throw errMdp;
     }
 
@@ -887,11 +901,15 @@ async function soumettreCompte(e) {
       email
     };
 
-    const { data: profilSauve, error: errProfil } = await _supabase
-      .from('profils')
-      .upsert(profilMaj)
-      .select('*')
-      .single();
+    const { data: profilSauve, error: errProfil } = await avecTimeout(
+      _supabase
+        .from('profils')
+        .upsert(profilMaj)
+        .select('*')
+        .single(),
+      COMPTE_UPDATE_TIMEOUT_MS,
+      'compte_update'
+    );
 
     if (errProfil) throw errProfil;
 
