@@ -44,7 +44,7 @@ let profilUtilisateur = null;
 let authStateProcessing = false;
 let sessionCheckPromise = null;
 let fileAuthQueue = Promise.resolve();
-window.__AUTH_BUILD__ = '20260311-27';
+window.__AUTH_BUILD__ = '20260311-28';
 window.AUTH_BUILD = window.__AUTH_BUILD__;
 
 function executerAuthEnSerie(tache) {
@@ -549,11 +549,24 @@ function formatterAffichageEmail(email) {
   return brut.split('@')[0] || brut;
 }
 
+function mettreAjourResumeCompte(profil, user) {
+  const resumePseudo = document.getElementById('compte-resume-pseudo');
+  const resumeMc = document.getElementById('compte-resume-mc');
+  const resumeNom = document.getElementById('compte-resume-nom');
+  const resumeEmail = document.getElementById('compte-resume-email');
+
+  if (resumePseudo) resumePseudo.textContent = profil?.pseudo_site || formatterAffichageEmail(user?.email || '');
+  if (resumeMc) resumeMc.textContent = profil?.pseudo_minecraft || '-';
+  if (resumeNom) resumeNom.textContent = profil?.nom_prenom || '-';
+  if (resumeEmail) resumeEmail.textContent = user?.email || profil?.email || '-';
+}
+
 function remplirFormulaireCompte(profil, user) {
   const champPseudo = document.getElementById('compte-pseudo');
   const champMc = document.getElementById('compte-mc');
   const champNom = document.getElementById('compte-nom');
   const champEmail = document.getElementById('compte-email');
+  const champMdpActuel = document.getElementById('compte-mdp-actuel');
   const champMdp = document.getElementById('compte-mdp');
   const champMdpConfirm = document.getElementById('compte-mdp-confirm');
 
@@ -561,8 +574,10 @@ function remplirFormulaireCompte(profil, user) {
   if (champMc) champMc.value = profil?.pseudo_minecraft || '';
   if (champNom) champNom.value = profil?.nom_prenom || '';
   if (champEmail) champEmail.value = user?.email || profil?.email || '';
+  if (champMdpActuel) champMdpActuel.value = '';
   if (champMdp) champMdp.value = '';
   if (champMdpConfirm) champMdpConfirm.value = '';
+  mettreAjourResumeCompte(profil, user);
 }
 
 async function recupererUtilisateurCourant() {
@@ -800,6 +815,7 @@ async function soumettreCompte(e) {
   const pseudo_minecraft = document.getElementById('compte-mc').value.trim();
   const nom_prenom = document.getElementById('compte-nom').value.trim();
   const email = document.getElementById('compte-email').value.trim();
+  const mdp_actuel = document.getElementById('compte-mdp-actuel').value;
   const mdp = document.getElementById('compte-mdp').value;
   const mdp_confirm = document.getElementById('compte-mdp-confirm').value;
 
@@ -830,6 +846,11 @@ async function soumettreCompte(e) {
     return;
   }
 
+  if (mdp && !mdp_actuel) {
+    afficherErreur('err-compte', 'Entre ton ancien mot de passe pour le changer.');
+    return;
+  }
+
   if (mdp !== mdp_confirm) {
     afficherErreur('err-compte', 'Les mots de passe ne correspondent pas.');
     return;
@@ -838,6 +859,16 @@ async function soumettreCompte(e) {
   setChargement('form-compte', true);
 
   try {
+    if (mdp) {
+      const { error: errAuthCourant } = await _supabase.auth.signInWithPassword({
+        email: user.email || email,
+        password: mdp_actuel
+      });
+      if (errAuthCourant) {
+        throw new Error('Ancien mot de passe incorrect.');
+      }
+    }
+
     if (email !== (user.email || '')) {
       const { error: errEmail } = await _supabase.auth.updateUser({ email });
       if (errEmail) throw errEmail;

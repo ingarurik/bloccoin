@@ -227,6 +227,32 @@
       text-align: center;
       margin-bottom: 18px;
     }
+    .compte-resume {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+    .compte-resume-item {
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.03);
+      padding: 10px 12px;
+    }
+    .compte-resume-label {
+      display: block;
+      font-family: 'Cinzel', serif;
+      font-size: 0.58rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 6px;
+    }
+    .compte-resume-value {
+      color: var(--text);
+      font-family: 'Crimson Text', Georgia, serif;
+      font-size: 1rem;
+      word-break: break-word;
+    }
     .compte-fermer {
       border: 1px solid rgba(255,255,255,0.2);
       background: transparent;
@@ -257,6 +283,9 @@
       margin-top: 6px;
     }
     @media (max-width: 640px) {
+      .compte-resume {
+        grid-template-columns: 1fr;
+      }
       #form-compte .grille-2 {
         grid-template-columns: 1fr;
       }
@@ -969,6 +998,24 @@
   <div class="compte-carte" role="dialog" aria-modal="true" aria-label="Fenetre compte">
     <div class="compte-texte">Mon compte</div>
     <div class="compte-sous-texte">Modifie tes informations joueur et tes informations de connexion.</div>
+    <div class="compte-resume">
+      <div class="compte-resume-item">
+        <span class="compte-resume-label">Pseudo actuel</span>
+        <span class="compte-resume-value" id="compte-resume-pseudo">-</span>
+      </div>
+      <div class="compte-resume-item">
+        <span class="compte-resume-label">Pseudo Minecraft</span>
+        <span class="compte-resume-value" id="compte-resume-mc">-</span>
+      </div>
+      <div class="compte-resume-item">
+        <span class="compte-resume-label">Nom</span>
+        <span class="compte-resume-value" id="compte-resume-nom">-</span>
+      </div>
+      <div class="compte-resume-item">
+        <span class="compte-resume-label">Email actuel</span>
+        <span class="compte-resume-value" id="compte-resume-email">-</span>
+      </div>
+    </div>
     <form id="form-compte" novalidate>
       <div class="grille-2">
         <div class="champ-groupe">
@@ -987,6 +1034,10 @@
       <div class="champ-groupe">
         <label for="compte-email">Adresse email</label>
         <input id="compte-email" type="email" placeholder="toi@exemple.fr" required autocomplete="email" />
+      </div>
+      <div class="champ-groupe">
+        <label for="compte-mdp-actuel">Ancien mot de passe</label>
+        <input id="compte-mdp-actuel" type="password" placeholder="Obligatoire seulement si tu changes le mot de passe" autocomplete="current-password" />
       </div>
       <div class="grille-2">
         <div class="champ-groupe">
@@ -1221,7 +1272,7 @@
   });
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="auth.js?v=20260311-27"></script>
+<script src="auth.js?v=20260311-28"></script>
 </body>
 </html>
 
