@@ -204,13 +204,13 @@
     }
     #compte-overlay.actif { display: flex; }
     .compte-carte {
-      width: min(360px, 100%);
+      width: min(560px, 100%);
       border: 1px solid rgba(240,192,64,0.22);
       background: rgba(10,18,35,0.97);
       box-shadow: 0 24px 80px rgba(0,0,0,.7);
       padding: 20px;
       animation: fadeUp .22s ease both;
-      text-align: center;
+      text-align: left;
     }
     .compte-texte {
       font-family: 'Cinzel', serif;
@@ -218,7 +218,14 @@
       letter-spacing: 0.08em;
       text-transform: uppercase;
       color: var(--gold-light);
-      margin-bottom: 16px;
+      margin-bottom: 8px;
+      text-align: center;
+    }
+    .compte-sous-texte {
+      color: var(--text-dim);
+      font-size: 0.9rem;
+      text-align: center;
+      margin-bottom: 18px;
     }
     .compte-fermer {
       border: 1px solid rgba(255,255,255,0.2);
@@ -236,7 +243,7 @@
       display: flex;
       gap: 10px;
       justify-content: center;
-      margin-top: 8px;
+      margin-top: 14px;
     }
     .compte-deconnexion {
       border-color: rgba(255, 119, 119, 0.45);
@@ -245,6 +252,17 @@
     .compte-deconnexion:hover {
       border-color: #ff7777;
       color: #ffd1d1;
+    }
+    #form-compte .btn-soumettre {
+      margin-top: 6px;
+    }
+    @media (max-width: 640px) {
+      #form-compte .grille-2 {
+        grid-template-columns: 1fr;
+      }
+      .compte-actions {
+        flex-direction: column;
+      }
     }
     .onglets {
       display: flex;
@@ -949,7 +967,40 @@
 
 <div id="compte-overlay">
   <div class="compte-carte" role="dialog" aria-modal="true" aria-label="Fenetre compte">
-    <div class="compte-texte">Compte</div>
+    <div class="compte-texte">Mon compte</div>
+    <div class="compte-sous-texte">Modifie tes informations joueur et tes informations de connexion.</div>
+    <form id="form-compte" novalidate>
+      <div class="grille-2">
+        <div class="champ-groupe">
+          <label for="compte-pseudo">Pseudo site</label>
+          <input id="compte-pseudo" type="text" placeholder="CreeperKiller" required minlength="3" />
+        </div>
+        <div class="champ-groupe">
+          <label for="compte-mc">Pseudo Minecraft</label>
+          <input id="compte-mc" type="text" placeholder="Steve_42" required />
+        </div>
+      </div>
+      <div class="champ-groupe">
+        <label for="compte-nom">Nom et prenom</label>
+        <input id="compte-nom" type="text" placeholder="Jean Dupont" required />
+      </div>
+      <div class="champ-groupe">
+        <label for="compte-email">Adresse email</label>
+        <input id="compte-email" type="email" placeholder="toi@exemple.fr" required autocomplete="email" />
+      </div>
+      <div class="grille-2">
+        <div class="champ-groupe">
+          <label for="compte-mdp">Nouveau mot de passe</label>
+          <input id="compte-mdp" type="password" placeholder="Laisser vide pour ne pas changer" minlength="6" autocomplete="new-password" />
+        </div>
+        <div class="champ-groupe">
+          <label for="compte-mdp-confirm">Confirmation</label>
+          <input id="compte-mdp-confirm" type="password" placeholder="********" autocomplete="new-password" />
+        </div>
+      </div>
+      <button type="submit" class="btn-soumettre" data-label="Enregistrer les modifications">Enregistrer les modifications</button>
+      <div id="err-compte" role="alert"></div>
+    </form>
     <div class="compte-actions">
       <button type="button" class="compte-fermer compte-deconnexion" id="btn-deconnexion-overlay">Deconnexion</button>
       <button type="button" class="compte-fermer" id="compte-fermer">Fermer</button>
@@ -1170,7 +1221,7 @@
   });
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="auth.js?v=20260311-26"></script>
+<script src="auth.js?v=20260311-27"></script>
 </body>
 </html>
 
