@@ -202,6 +202,21 @@
       justify-content: center;
       padding: 20px;
       overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(240,192,64,0.55) rgba(255,255,255,0.07);
+    }
+    #compte-overlay::-webkit-scrollbar { width: 10px; }
+    #compte-overlay::-webkit-scrollbar-track {
+      background: rgba(255,255,255,0.07);
+      border-radius: 10px;
+    }
+    #compte-overlay::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, rgba(240,192,64,0.8), rgba(240,192,64,0.45));
+      border-radius: 10px;
+      border: 2px solid rgba(2,6,14,0.6);
+    }
+    #compte-overlay::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(180deg, rgba(240,192,64,0.95), rgba(240,192,64,0.65));
     }
     #compte-overlay.actif { display: flex; }
     .compte-carte {
@@ -214,6 +229,21 @@
       animation: fadeUp .22s ease both;
       text-align: left;
       overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(240,192,64,0.6) rgba(255,255,255,0.08);
+    }
+    .compte-carte::-webkit-scrollbar { width: 10px; }
+    .compte-carte::-webkit-scrollbar-track {
+      background: rgba(255,255,255,0.08);
+      border-radius: 10px;
+    }
+    .compte-carte::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, rgba(240,192,64,0.85), rgba(240,192,64,0.5));
+      border-radius: 10px;
+      border: 2px solid rgba(10,18,35,0.85);
+    }
+    .compte-carte::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(180deg, rgba(240,192,64,1), rgba(240,192,64,0.7));
     }
     .compte-texte {
       font-family: 'Cinzel', serif;
