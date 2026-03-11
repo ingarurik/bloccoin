@@ -212,16 +212,26 @@ function afficherBoutonConnexion() {
   const zone = document.getElementById('zone-compte');
   if (btn) btn.style.display = '';
   if (zone) zone.style.display = 'none';
+  fermerFenetreCompte();
 }
 
-function afficherPseudo(pseudo) {
+function formatterAffichageEmail(email) {
+  const brut = (email || '').trim();
+  if (!brut) return 'Joueur';
+  if (brut.toLowerCase().endsWith('@gmail.com')) {
+    return brut.slice(0, -'@gmail.com'.length);
+  }
+  return brut.split('@')[0] || brut;
+}
+
+function afficherPseudo(valeurAffichee) {
   const btn = document.getElementById('btn-connexion');
   const zone = document.getElementById('zone-compte');
   const nomAffiche = document.getElementById('pseudo-affiche');
 
   if (btn) btn.style.display = 'none';
   if (zone) zone.style.display = '';
-  if (nomAffiche) nomAffiche.textContent = pseudo;
+  if (nomAffiche) nomAffiche.textContent = valeurAffichee;
 }
 
 function initialiserModal() {
@@ -292,7 +302,7 @@ async function soumettreConnexion(e) {
   setChargement('form-connexion', true);
   viderErreurs();
 
-  const { error } = await _supabase.auth.signInWithPassword({ email, password: mdp });
+      afficherPseudo(formatterAffichageEmail(userObj.email || pseudoAffichageDepuisUtilisateur(userObj)));
 
   setChargement('form-connexion', false);
   if (error) afficherErreur('err-connexion', traduireErreur(error.message));
@@ -314,12 +324,23 @@ async function soumettreInscription(e) {
   }
   if (pseudo_site.length < 3) {
     afficherErreur('err-inscription', 'Le pseudo doit faire au moins 3 caracteres.');
-    return;
+  const emailUtilisateur = userObj?.email || profilFinal.email || '';
+  afficherPseudo(formatterAffichageEmail(emailUtilisateur || profilFinal.pseudo_site));
   }
 
   setChargement('form-inscription', true);
   viderErreurs();
+  if (pseudoBtn) pseudoBtn.addEventListener('click', ouvrirFenetreCompte);
 
+  const btnFermerFenetre = document.getElementById('compte-fermer');
+  if (btnFermerFenetre) btnFermerFenetre.addEventListener('click', fermerFenetreCompte);
+
+  const overlayCompte = document.getElementById('compte-overlay');
+  if (overlayCompte) {
+    overlayCompte.addEventListener('click', (e) => {
+      if (e.target === overlayCompte) fermerFenetreCompte();
+    });
+  }
   const { data, error: errAuth } = await _supabase.auth.signUp({
     email,
     password: mdp,
@@ -328,6 +349,10 @@ async function soumettreInscription(e) {
     }
   });
 
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') fermerFenetreCompte();
+  });
   if (errAuth) {
     setChargement('form-inscription', false);
     afficherErreur('err-inscription', traduireErreur(errAuth.message));

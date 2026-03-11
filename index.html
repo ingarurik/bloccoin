@@ -172,6 +172,48 @@
       background: none; border: 0; color: var(--text-dim); font-size: 1.3rem; cursor: pointer;
     }
     #auth-fermer:hover { color: var(--text); }
+
+    #compte-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(2,6,14,0.78);
+      backdrop-filter: blur(5px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    #compte-overlay.actif { display: flex; }
+    .compte-carte {
+      width: min(360px, 100%);
+      border: 1px solid rgba(240,192,64,0.22);
+      background: rgba(10,18,35,0.97);
+      box-shadow: 0 24px 80px rgba(0,0,0,.7);
+      padding: 20px;
+      animation: fadeUp .22s ease both;
+      text-align: center;
+    }
+    .compte-texte {
+      font-family: 'Cinzel', serif;
+      font-size: 0.95rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--gold-light);
+      margin-bottom: 16px;
+    }
+    .compte-fermer {
+      border: 1px solid rgba(255,255,255,0.2);
+      background: transparent;
+      color: var(--text);
+      font-family: 'Cinzel', serif;
+      font-size: 0.68rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 8px 14px;
+      cursor: pointer;
+    }
+    .compte-fermer:hover { border-color: var(--gold); color: var(--gold); }
     .onglets {
       display: flex;
       margin: 16px 22px 0;
@@ -869,6 +911,13 @@
         </form>
       </div>
     </div>
+  </div>
+</div>
+
+<div id="compte-overlay">
+  <div class="compte-carte" role="dialog" aria-modal="true" aria-label="Fenetre compte">
+    <div class="compte-texte">salut</div>
+    <button type="button" class="compte-fermer" id="compte-fermer">Fermer</button>
   </div>
 </div>
 
