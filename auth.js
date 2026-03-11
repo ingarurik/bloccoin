@@ -2,13 +2,16 @@
 
 const SUPABASE_URL = 'https://cimyrkybpnssyeyobyrh.supabase.co';
 const SUPABASE_ANON = 'sb_publishable_XAfHoy6vcPskEW1vNJaAkA_92iGeE-v';
+const SUPABASE_AUTH_STORAGE_KEY = 'sb-cimyrkybpnssyeyobyrh-auth-token';
+const SUPABASE_AUTH_LOCK_KEY = `lock:${SUPABASE_AUTH_STORAGE_KEY}`;
 
 const _supabase = window.__BLOCCOIN_SUPABASE__ || supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
   auth: {
     flowType: 'pkce',
     persistSession: true,
     autoRefreshToken: true,
-    detectSessionInUrl: true
+    detectSessionInUrl: true,
+    multiTab: false
   }
 });
 
@@ -34,7 +37,7 @@ function traduireErreur(message) {
 let profilUtilisateur = null;
 let authStateProcessing = false;
 let sessionCheckPromise = null;
-window.__AUTH_BUILD__ = '20260311-20';
+window.__AUTH_BUILD__ = '20260311-21';
 window.AUTH_BUILD = window.__AUTH_BUILD__;
 
 function sessionValide(session) {
@@ -101,6 +104,46 @@ function avecTimeout(promesse, ms, libelle) {
   });
 }
 
+function nettoyerVerrouAuthOrphelin() {
+  try {
+    window.localStorage.removeItem(SUPABASE_AUTH_LOCK_KEY);
+  } catch (_) {
+    // Ignore storage access errors.
+  }
+
+  try {
+    window.sessionStorage.removeItem(SUPABASE_AUTH_LOCK_KEY);
+  } catch (_) {
+    // Ignore storage access errors.
+  }
+}
+
+async function getSessionFiable(timeoutMs = 7000) {
+  try {
+    return await avecTimeout(_supabase.auth.getSession(), timeoutMs, 'getSession');
+  } catch (err) {
+    if (!estErreurVerrouSupabase(err) && !String(err?.message || '').includes('timeout:getSession')) {
+      throw err;
+    }
+
+    nettoyerVerrouAuthOrphelin();
+    return await avecTimeout(_supabase.auth.getSession(), timeoutMs, 'getSession');
+  }
+}
+
+async function getUserFiable(timeoutMs = 7000) {
+  try {
+    return await avecTimeout(_supabase.auth.getUser(), timeoutMs, 'getUser');
+  } catch (err) {
+    if (!estErreurVerrouSupabase(err) && !String(err?.message || '').includes('timeout:getUser')) {
+      throw err;
+    }
+
+    nettoyerVerrouAuthOrphelin();
+    return await avecTimeout(_supabase.auth.getUser(), timeoutMs, 'getUser');
+  }
+}
+
 function urlIndiqueRetourOAuth() {
   const params = new URLSearchParams(window.location.search);
   return params.has('code') || params.has('state') || params.get('auth_return') === '1';
@@ -113,7 +156,7 @@ async function forcerSynchroPostOAuth() {
 
   while (Date.now() - debut < timeoutMs) {
     try {
-      const { data: { session } } = await _supabase.auth.getSession();
+      const { data: { session } } = await getSessionFiable();
       if (sessionValide(session)) {
         await chargerProfilEtAfficher(session.user);
         nettoyerParamsOAuthDansUrl();
@@ -136,7 +179,7 @@ async function forcerSynchroPostOAuth() {
 
 async function recupererSessionAvecRetry(maxTentatives = 8, delaiMs = 250) {
   for (let i = 0; i < maxTentatives; i++) {
-    const { data: { session } } = await _supabase.auth.getSession();
+    const { data: { session } } = await getSessionFiable();
     if (sessionValide(session)) return session;
     await attendre(delaiMs);
   }
@@ -170,7 +213,7 @@ async function verifierSession() {
     const retourOAuth = params.get('auth_return') === '1';
     const session = retourOAuth
       ? await recupererSessionAvecRetry(12, 250)
-      : (await _supabase.auth.getSession()).data.session;
+      : (await getSessionFiable()).data.session;
 
     if (retourOAuth) {
       nettoyerParamsOAuthDansUrl();
@@ -199,7 +242,7 @@ async function verifierSession() {
 
 function demarrerResynchronisationSession() {
   let tentatives = 0;
-  const maxTentatives = 10;
+  const maxTentatives = 8;
   let verificationEnCours = false;
   const interval = setInterval(async () => {
     if (verificationEnCours) return;
@@ -222,7 +265,7 @@ function demarrerResynchronisationSession() {
     } finally {
       verificationEnCours = false;
     }
-  }, 500);
+  }, 1200);
 
   // Re-synchronise quand l'utilisateur revient sur l'onglet.
   window.addEventListener('focus', () => {
@@ -648,14 +691,14 @@ window.__bloccoinAuthCheck = async function __bloccoinAuthCheck() {
   let userError = null;
 
   try {
-    const sessionResp = await avecTimeout(_supabase.auth.getSession(), 4000, 'getSession');
+    const sessionResp = await getSessionFiable(5000);
     session = sessionResp?.data?.session || null;
   } catch (err) {
     sessionError = String(err?.message || err || 'unknown');
   }
 
   try {
-    const userResp = await avecTimeout(_supabase.auth.getUser(), 4000, 'getUser');
+    const userResp = await getUserFiable(5000);
     user = userResp?.data?.user || null;
   } catch (err) {
     userError = String(err?.message || err || 'unknown');
