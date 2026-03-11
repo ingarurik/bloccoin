@@ -44,7 +44,7 @@ let profilUtilisateur = null;
 let authStateProcessing = false;
 let sessionCheckPromise = null;
 let fileAuthQueue = Promise.resolve();
-window.__AUTH_BUILD__ = '20260311-23';
+window.__AUTH_BUILD__ = '20260311-24';
 window.AUTH_BUILD = window.__AUTH_BUILD__;
 
 function executerAuthEnSerie(tache) {
@@ -144,6 +144,14 @@ function nettoyerParamsOAuthDansUrl() {
   paramsOAuth.forEach((p) => url.searchParams.delete(p));
   const urlNettoyee = url.pathname + (url.search ? url.search : '') + (url.hash ? url.hash : '');
   window.history.replaceState({}, document.title, urlNettoyee);
+}
+
+function definirEtatConnexionUi(estConnecte) {
+  if (estConnecte) {
+    document.body.classList.add('auth-connecte');
+  } else {
+    document.body.classList.remove('auth-connecte');
+  }
 }
 
 function attendre(ms) {
@@ -300,7 +308,15 @@ async function verifierSession() {
     }
 
     if (sessionValide(session)) {
+      afficherPseudo(formatterAffichageEmail(session.user?.email || pseudoAffichageDepuisUtilisateur(session.user)));
       await chargerProfilEtAfficher(session.user);
+      return;
+    }
+
+    const { data: { user } } = await getUserFiable();
+    if (user) {
+      afficherPseudo(formatterAffichageEmail(user.email || pseudoAffichageDepuisUtilisateur(user)));
+      await chargerProfilEtAfficher(user);
       return;
     }
 
@@ -383,6 +399,10 @@ async function chargerProfilEtAfficher(userOrId) {
   if (!userId) {
     afficherBoutonConnexion();
     return;
+  }
+
+  if (userObj) {
+    afficherPseudo(formatterAffichageEmail(userObj.email || pseudoAffichageDepuisUtilisateur(userObj)));
   }
 
   const { data: profil, error } = await _supabase
@@ -494,6 +514,7 @@ function afficherBoutonConnexion() {
     btnCompte.classList.remove('connecte');
   }
   if (zone) zone.style.display = 'none';
+  definirEtatConnexionUi(false);
   fermerFenetreCompte();
 }
 
@@ -520,6 +541,7 @@ function afficherPseudo(valeurAffichee) {
   }
   if (zone) zone.style.display = 'none';
   if (nomAffiche) nomAffiche.textContent = valeurAffichee;
+  definirEtatConnexionUi(true);
 }
 
 function initialiserModal() {
