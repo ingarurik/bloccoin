@@ -381,6 +381,7 @@
     const SUPABASE_ANON = 'sb_publishable_XAfHoy6vcPskEW1vNJaAkA_92iGeE-v';
     const ADMIN_EMAIL = 'ingaruriksonic@gmail.com';
     const VERIFY_ENDPOINT = '/api/admin-verify';
+    const LOG_META_ENDPOINT = '/api/admin-log-meta';
     const UNLOCK_KEY = 'bloccoin_adminpanel_unlock_v1';
     const ADMIN_LOG_KEY = 'bloccoin_admin_logs_v1';
     const UNLOCK_DURATION_MS = 30 * 60 * 1000;
@@ -444,12 +445,43 @@
       if (type) note.classList.add(type);
     }
 
-    function addAdminLog(action, details) {
+    async function fetchLogMeta() {
       try {
+        const { data: { session } } = await client.auth.getSession();
+        const fallbackEmail = (session?.user?.email || '').trim().toLowerCase() || 'inconnu';
+
+        if (!session?.access_token) {
+          return { email: fallbackEmail, ip: 'IP indisponible' };
+        }
+
+        const response = await fetch(LOG_META_ENDPOINT, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json'
+          },
+          body: JSON.stringify({ accessToken: session.access_token })
+        });
+
+        const data = await response.json().catch(() => ({}));
+        return {
+          email: String(data?.email || fallbackEmail),
+          ip: String(data?.ip || 'IP indisponible')
+        };
+      } catch (_) {
+        return { email: 'inconnu', ip: 'IP indisponible' };
+      }
+    }
+
+    async function addAdminLog(action, details) {
+      try {
+        const meta = await fetchLogMeta();
         const item = {
           ts: new Date().toISOString(),
           action: String(action || 'action'),
-          details: String(details || '')
+          details: String(details || ''),
+          actorEmail: String(meta?.email || 'inconnu'),
+          actorIp: String(meta?.ip || 'IP indisponible')
         };
         const raw = localStorage.getItem(ADMIN_LOG_KEY);
         const list = raw ? JSON.parse(raw) : [];
