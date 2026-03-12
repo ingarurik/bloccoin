@@ -1134,6 +1134,33 @@
   reveals.forEach(el => revealObs.observe(el));
 
   /* ═══ SIDEBAR ═══ */
+  const ADMIN_UNLOCK_KEY = 'bloccoin_adminpanel_unlock_v1';
+  const ADMIN_EXTRA_PAGES = [
+    {ico:'📊',lbl:'Stats',file:'AdminStats.html'},
+    {ico:'🧰',lbl:'Commandes',file:'AdminCommandes.html'},
+    {ico:'🛡️',lbl:'Moderation',file:'AdminModeration.html'},
+    {ico:'🧾',lbl:'Logs',file:'AdminLogs.html'},
+  ];
+
+  function isAdminUnlocked() {
+    try {
+      const raw = sessionStorage.getItem(ADMIN_UNLOCK_KEY);
+      if (!raw) return false;
+      const parsed = JSON.parse(raw);
+      return Number(parsed?.until || 0) > Date.now();
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function syncAdminPages() {
+    const pages = [{ico:'👑',lbl:'Adminpanel',file:'Adminpanel.html'}];
+    if (document.body.classList.contains('auth-admin') && isAdminUnlocked()) {
+      pages.push(...ADMIN_EXTRA_PAGES);
+    }
+    CATS.admin.pages = pages;
+  }
+
   const CATS = {
     accueil: { ico:'🏠', ttl:'Accueil', pages:[
       {ico:'📄',lbl:'Présentation',file:'Présentation.html'},
@@ -1188,10 +1215,19 @@
   function openCat(id, btn) {
     if (!railOpen) return;
     if (id === 'admin' && !document.body.classList.contains('auth-admin')) return;
+    if (id === 'admin') syncAdminPages();
     const panel = document.getElementById('sbPanel');
     if (activeCat === id) { closePanel(); return; }
     activeCat = id;
     const c = CATS[id];
+
+    if (id === 'admin' && c.pages.length === 1) {
+      document.querySelectorAll('.sb-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      openPage(c.pages[0].lbl, c.pages[0].file);
+      return;
+    }
+
     document.querySelectorAll('.sb-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById('panelIco').textContent = c.ico;
@@ -1279,6 +1315,10 @@
       closePanel();
     }
   });
+
+  window.addEventListener('focus', syncAdminPages);
+  setInterval(syncAdminPages, 1500);
+  syncAdminPages();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="auth.js?v=20260312-31"></script>

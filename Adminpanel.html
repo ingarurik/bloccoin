@@ -375,6 +375,10 @@
       </div>
 
       <div class="actions">
+        <a class="btn" href="AdminStats.html">Stats page</a>
+        <a class="btn" href="AdminCommandes.html">Commandes page</a>
+        <a class="btn" href="AdminModeration.html">Moderation page</a>
+        <a class="btn" href="AdminLogs.html">Logs page</a>
         <button class="btn secondary" id="btn-logout-admin" type="button">Se deconnecter</button>
       </div>
     </section>
@@ -386,6 +390,7 @@
     const ADMIN_EMAIL = 'ingaruriksonic@gmail.com';
     const VERIFY_ENDPOINT = '/api/admin-verify';
     const UNLOCK_KEY = 'bloccoin_adminpanel_unlock_v1';
+    const ADMIN_LOG_KEY = 'bloccoin_admin_logs_v1';
     const UNLOCK_DURATION_MS = 30 * 60 * 1000;
     const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
       auth: {
@@ -447,6 +452,22 @@
       if (type) note.classList.add(type);
     }
 
+    function addAdminLog(action, details) {
+      try {
+        const item = {
+          ts: new Date().toISOString(),
+          action: String(action || 'action'),
+          details: String(details || '')
+        };
+        const raw = localStorage.getItem(ADMIN_LOG_KEY);
+        const list = raw ? JSON.parse(raw) : [];
+        list.unshift(item);
+        localStorage.setItem(ADMIN_LOG_KEY, JSON.stringify(list.slice(0, 250)));
+      } catch (_) {
+        // Ignore logging failures.
+      }
+    }
+
     function setAdminView(name) {
       document.querySelectorAll('[data-view-tab]').forEach((btn) => {
         btn.classList.toggle('active', btn.dataset.viewTab === name);
@@ -454,6 +475,7 @@
       document.querySelectorAll('[data-view]').forEach((view) => {
         view.classList.toggle('active', view.dataset.view === name);
       });
+      addAdminLog('tab', `Switch vers ${name}`);
     }
 
     function formatRemaining(ms) {
@@ -494,12 +516,15 @@
       const unlockState = readUnlockState();
       const untilTs = Number(unlockState?.until || 0);
       const untilTxt = untilTs > Date.now() ? new Date(untilTs).toLocaleString('fr-FR') : 'Expire';
+      const logsRaw = localStorage.getItem(ADMIN_LOG_KEY);
+      const logsCount = logsRaw ? (JSON.parse(logsRaw)?.length || 0) : 0;
 
       document.getElementById('admin-email').textContent = email;
       document.getElementById('admin-2fa-until').textContent = untilTxt;
       document.getElementById('admin-vote-1h').textContent = vote1hText;
       document.getElementById('admin-vote-3h').textContent = vote3hText;
       document.getElementById('stat-support').textContent = supportText;
+      document.getElementById('stat-session').textContent = `Active (${logsCount} logs)`;
 
       try {
         const response = await fetch(`${SUPABASE_URL}/rest/v1/profils?select=id`, {
@@ -537,8 +562,11 @@
 
       document.getElementById('cmd-say').addEventListener('click', makeSay);
       document.getElementById('cmd-tell').addEventListener('click', makeTell);
+      document.getElementById('cmd-say').addEventListener('click', () => addAdminLog('commande', 'Generation /say'));
+      document.getElementById('cmd-tell').addEventListener('click', () => addAdminLog('commande', 'Generation /tell'));
       document.getElementById('cmd-copy').addEventListener('click', async () => {
         try { await navigator.clipboard.writeText(out.textContent || ''); } catch (_) {}
+        addAdminLog('commande', 'Copie commande');
       });
     }
 
@@ -561,12 +589,16 @@
 
       document.getElementById('mod-kick').addEventListener('click', makeKick);
       document.getElementById('mod-ban').addEventListener('click', makeBan);
+      document.getElementById('mod-kick').addEventListener('click', () => addAdminLog('moderation', 'Generation /kick'));
+      document.getElementById('mod-ban').addEventListener('click', () => addAdminLog('moderation', 'Generation /ban'));
       document.getElementById('mod-copy').addEventListener('click', async () => {
         try { await navigator.clipboard.writeText(out.textContent || ''); } catch (_) {}
+        addAdminLog('moderation', 'Copie commande moderation');
       });
     }
 
     async function logoutAndRefresh() {
+      addAdminLog('session', 'Deconnexion admin');
       clearUnlockState();
       try {
         await client.auth.signOut({ scope: 'local' });
@@ -626,6 +658,7 @@
         saveUnlockState(email);
         if (passwordInput) passwordInput.value = '';
         setSecondNote('Verification validee.', 'notice-ok');
+        addAdminLog('securite', '2FA admin validee');
         document.getElementById('admin-email').textContent = email;
         showState('state-admin');
       } catch (_) {
