@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Bloc-Coin BC logo</title>
+  <desc id="desc">Stylized BC monogram inspired by the Bloc-Coin identity.</desc>
+  <defs>
+    <linearGradient id="blueFront" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#2f83ff"/>
+      <stop offset="55%" stop-color="#1d5fe0"/>
+      <stop offset="100%" stop-color="#0d3ea8"/>
+    </linearGradient>
+    <linearGradient id="blueSide" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#7ec2ff"/>
+      <stop offset="100%" stop-color="#2f83ff"/>
+    </linearGradient>
+    <linearGradient id="sandFront" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f4f7c6"/>
+      <stop offset="55%" stop-color="#dfe5a7"/>
+      <stop offset="100%" stop-color="#b9bd7c"/>
+    </linearGradient>
+    <linearGradient id="redSide" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#6d0f19"/>
+      <stop offset="100%" stop-color="#b43c45"/>
+    </linearGradient>
+    <linearGradient id="woodTex" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#b68462"/>
+      <stop offset="45%" stop-color="#8b5e42"/>
+      <stop offset="100%" stop-color="#6c432d"/>
+    </linearGradient>
+    <pattern id="woodPattern" width="36" height="36" patternUnits="userSpaceOnUse">
+      <rect width="36" height="36" fill="url(#woodTex)"/>
+      <rect width="18" height="12" fill="#9e6d4d" opacity="0.48"/>
+      <rect x="18" y="12" width="18" height="12" fill="#c59672" opacity="0.42"/>
+      <rect y="24" width="18" height="12" fill="#76503a" opacity="0.42"/>
+      <rect x="18" width="18" height="12" fill="#5c3d2a" opacity="0.28"/>
+    </pattern>
+    <pattern id="stonePattern" width="42" height="42" patternUnits="userSpaceOnUse">
+      <rect width="42" height="42" fill="#8b8b8b"/>
+      <rect width="21" height="14" fill="#6f6f6f"/>
+      <rect x="21" y="14" width="21" height="14" fill="#a3a3a3"/>
+      <rect y="28" width="21" height="14" fill="#7c7c7c"/>
+      <path d="M21 0V42M0 14H42M0 28H42" stroke="#575757" stroke-width="2" opacity="0.55"/>
+    </pattern>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="10" flood-color="#000" flood-opacity="0.32"/>
+    </filter>
+    <style>
+      .outline {
+        paint-order: stroke fill;
+        stroke: #ffffff;
+        stroke-width: 16;
+        stroke-linejoin: round;
+      }
+    </style>
+  </defs>
+
+  <g filter="url(#shadow)">
+    <text x="72" y="366" font-size="340" font-weight="700" font-family="Georgia, serif" fill="#6a1b1f" opacity="0.82">B</text>
+    <text x="250" y="366" font-size="340" font-weight="700" font-family="Georgia, serif" fill="#7b1f26" opacity="0.82">C</text>
+
+    <text x="54" y="352" font-size="330" font-weight="700" font-family="Georgia, serif" fill="url(#woodPattern)" class="outline">B</text>
+    <text x="242" y="352" font-size="330" font-weight="700" font-family="Georgia, serif" fill="url(#sandFront)" class="outline">C</text>
+
+    <path d="M127 67h44v267h-44z" fill="url(#blueSide)" opacity="0.92"/>
+    <path d="M106 83h160v60H106z" fill="url(#blueFront)" opacity="0.94"/>
+    <path d="M106 212h132v57H106z" fill="url(#blueFront)" opacity="0.94"/>
+    <path d="M319 71h40v268h-40z" fill="url(#redSide)" opacity="0.92"/>
+    <path d="M378 86h68v44h-68z" fill="url(#stonePattern)" opacity="0.88"/>
+    <path d="M376 214h70v44h-70z" fill="url(#stonePattern)" opacity="0.88"/>
+    <path d="M381 287h65v47h-65z" fill="url(#stonePattern)" opacity="0.88"/>
+  </g>
+</svg>
