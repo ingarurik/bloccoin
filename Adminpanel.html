@@ -385,6 +385,7 @@
     const UNLOCK_KEY = 'bloccoin_adminpanel_unlock_v1';
     const ADMIN_LOG_KEY = 'bloccoin_admin_logs_v1';
     const UNLOCK_DURATION_MS = 30 * 60 * 1000;
+    const FORCE_SECOND_FACTOR_EACH_REFRESH = true;
     const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
       auth: {
         flowType: 'pkce',
@@ -766,6 +767,10 @@
     client.auth.onAuthStateChange(() => {
       renderAccessState();
     });
+
+    if (FORCE_SECOND_FACTOR_EACH_REFRESH) {
+      sessionStorage.removeItem(UNLOCK_KEY);
+    }
 
     renderAccessState();
   </script>
