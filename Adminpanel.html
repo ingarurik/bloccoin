@@ -107,6 +107,77 @@
     }
     .notice-ok { color: var(--ok); }
     .notice-err { color: var(--err); }
+    .admin-nav {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+    .admin-tab {
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.03);
+      color: var(--text);
+      font-family: 'Cinzel', serif;
+      font-size: .64rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      padding: 8px 12px;
+      cursor: pointer;
+    }
+    .admin-tab.active {
+      border-color: rgba(240,192,64,.6);
+      color: var(--gold-light);
+      background: rgba(240,192,64,.12);
+    }
+    .admin-view {
+      display: none;
+      margin-top: 14px;
+    }
+    .admin-view.active {
+      display: block;
+    }
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .metric {
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(8,16,30,0.8);
+      padding: 10px 12px;
+    }
+    .metric-label {
+      display: block;
+      font-family: 'Cinzel', serif;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      font-size: .56rem;
+      color: var(--dim);
+      margin-bottom: 4px;
+    }
+    .metric-value {
+      display: block;
+      color: var(--text);
+      font-size: .98rem;
+      word-break: break-word;
+    }
+    .mono {
+      font-family: 'Courier New', monospace;
+      font-size: .9rem;
+      color: #dbe4f7;
+      background: rgba(5,10,20,.8);
+      border: 1px solid rgba(255,255,255,.14);
+      padding: 10px;
+      margin-top: 8px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
     .form-group {
       margin-top: 12px;
       display: flex;
@@ -145,6 +216,8 @@
       .wrap { padding: 40px 14px 70px; }
       .hero, .panel { padding: 20px; }
       .grid { grid-template-columns: 1fr; }
+      .metrics { grid-template-columns: 1fr; }
+      .row { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -210,25 +283,98 @@
 
     <section class="panel state" id="state-admin">
       <div class="card-title notice-ok">Acces admin autorise</div>
-      <p class="muted">Tu es connecte avec le compte admin. Cette page peut servir de hub prive pour tes futurs outils et tests.</p>
-      <div class="grid">
-        <article class="card">
-          <div class="card-title">Compte</div>
-          <p class="muted" id="admin-email">-</p>
-        </article>
-        <article class="card">
-          <div class="card-title">Etat</div>
-          <p class="muted">Session admin verifiee et page protegee.</p>
-        </article>
-        <article class="card">
-          <div class="card-title">Acces rapide</div>
-          <p class="muted">Raccourcis vers les pages de test et de moderation.</p>
-        </article>
+      <p class="muted">Verification OK. Les sections admin se debloquent maintenant : Stats, Commandes et Moderation.</p>
+
+      <div class="admin-nav">
+        <button type="button" class="admin-tab active" data-view-tab="dashboard">Dashboard</button>
+        <button type="button" class="admin-tab" data-view-tab="stats">Stats</button>
+        <button type="button" class="admin-tab" data-view-tab="commandes">Commandes</button>
+        <button type="button" class="admin-tab" data-view-tab="moderation">Ban / Kick</button>
       </div>
+
+      <div class="admin-view active" data-view="dashboard">
+        <div class="metrics">
+          <article class="metric">
+            <span class="metric-label">Compte admin</span>
+            <span class="metric-value" id="admin-email">-</span>
+          </article>
+          <article class="metric">
+            <span class="metric-label">2FA secondaire</span>
+            <span class="metric-value" id="admin-2fa-until">-</span>
+          </article>
+          <article class="metric">
+            <span class="metric-label">Cooldown vote 1h</span>
+            <span class="metric-value" id="admin-vote-1h">-</span>
+          </article>
+          <article class="metric">
+            <span class="metric-label">Cooldown vote 3h</span>
+            <span class="metric-value" id="admin-vote-3h">-</span>
+          </article>
+        </div>
+      </div>
+
+      <div class="admin-view" data-view="stats">
+        <div class="metrics">
+          <article class="metric">
+            <span class="metric-label">Comptes inscrits</span>
+            <span class="metric-value" id="stat-profils">Chargement...</span>
+          </article>
+          <article class="metric">
+            <span class="metric-label">Session admin</span>
+            <span class="metric-value" id="stat-session">Active</span>
+          </article>
+          <article class="metric">
+            <span class="metric-label">Cooldown assistance</span>
+            <span class="metric-value" id="stat-support">-</span>
+          </article>
+          <article class="metric">
+            <span class="metric-label">Etat API</span>
+            <span class="metric-value" id="stat-api">OK</span>
+          </article>
+        </div>
+      </div>
+
+      <div class="admin-view" data-view="commandes">
+        <p class="muted">Genere rapidement tes commandes admin Minecraft et copie-les en 1 clic.</p>
+        <div class="row">
+          <div class="form-group">
+            <label class="form-label" for="cmd-target">Pseudo cible</label>
+            <input id="cmd-target" class="form-input" type="text" placeholder="Pseudo joueur" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="cmd-message">Message staff</label>
+            <input id="cmd-message" class="form-input" type="text" placeholder="Message" />
+          </div>
+        </div>
+        <div class="actions">
+          <button type="button" class="btn" id="cmd-say">Commande /say</button>
+          <button type="button" class="btn" id="cmd-tell">Commande /tell</button>
+          <button type="button" class="btn secondary" id="cmd-copy">Copier la commande</button>
+        </div>
+        <div class="mono" id="cmd-output">/say Bienvenue sur Bloc-Coin</div>
+      </div>
+
+      <div class="admin-view" data-view="moderation">
+        <p class="muted">Prepare tes commandes de moderation en restant dans le theme admin.</p>
+        <div class="row">
+          <div class="form-group">
+            <label class="form-label" for="mod-target">Pseudo joueur</label>
+            <input id="mod-target" class="form-input" type="text" placeholder="Pseudo joueur" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="mod-reason">Raison</label>
+            <input id="mod-reason" class="form-input" type="text" placeholder="Raison" />
+          </div>
+        </div>
+        <div class="actions">
+          <button type="button" class="btn" id="mod-kick">Generer /kick</button>
+          <button type="button" class="btn" id="mod-ban">Generer /ban</button>
+          <button type="button" class="btn secondary" id="mod-copy">Copier</button>
+        </div>
+        <div class="mono" id="mod-output">/kick joueur raison</div>
+      </div>
+
       <div class="actions">
-        <a class="btn" href="Vote.html">Vote</a>
-        <a class="btn" href="Assistance.html">Assistance</a>
-        <a class="btn secondary" href="Discord.html">Discord</a>
         <button class="btn secondary" id="btn-logout-admin" type="button">Se deconnecter</button>
       </div>
     </section>
@@ -299,6 +445,125 @@
       note.textContent = message || '';
       note.classList.remove('notice-ok', 'notice-err');
       if (type) note.classList.add(type);
+    }
+
+    function setAdminView(name) {
+      document.querySelectorAll('[data-view-tab]').forEach((btn) => {
+        btn.classList.toggle('active', btn.dataset.viewTab === name);
+      });
+      document.querySelectorAll('[data-view]').forEach((view) => {
+        view.classList.toggle('active', view.dataset.view === name);
+      });
+    }
+
+    function formatRemaining(ms) {
+      const totalSec = Math.max(0, Math.floor(ms / 1000));
+      const h = Math.floor(totalSec / 3600);
+      const m = Math.floor((totalSec % 3600) / 60);
+      const s = totalSec % 60;
+      return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+    }
+
+    async function chargerStatsAdmin(session, email) {
+      const voteKey = `bloccoin_vote_state_${session?.user?.id || ''}`;
+      let vote1hText = 'Disponible';
+      let vote3hText = 'Disponible';
+      let supportText = 'Disponible';
+
+      try {
+        const voteRaw = localStorage.getItem(voteKey);
+        if (voteRaw) {
+          const vote = JSON.parse(voteRaw);
+          const r1 = (Number(vote?.next1h) || 0) - Date.now();
+          const r3 = (Number(vote?.next3h) || 0) - Date.now();
+          if (r1 > 0) vote1hText = formatRemaining(r1);
+          if (r3 > 0) vote3hText = formatRemaining(r3);
+        }
+      } catch (_) {
+        // Ignore malformed local vote cache.
+      }
+
+      try {
+        const supportUntil = Number(localStorage.getItem('bloccoin_support_cooldown_until') || 0);
+        const rs = supportUntil - Date.now();
+        if (rs > 0) supportText = formatRemaining(rs);
+      } catch (_) {
+        // Ignore malformed support cooldown value.
+      }
+
+      const unlockState = readUnlockState();
+      const untilTs = Number(unlockState?.until || 0);
+      const untilTxt = untilTs > Date.now() ? new Date(untilTs).toLocaleString('fr-FR') : 'Expire';
+
+      document.getElementById('admin-email').textContent = email;
+      document.getElementById('admin-2fa-until').textContent = untilTxt;
+      document.getElementById('admin-vote-1h').textContent = vote1hText;
+      document.getElementById('admin-vote-3h').textContent = vote3hText;
+      document.getElementById('stat-support').textContent = supportText;
+
+      try {
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/profils?select=id`, {
+          method: 'HEAD',
+          headers: {
+            apikey: SUPABASE_ANON,
+            Authorization: `Bearer ${session.access_token}`,
+            Prefer: 'count=exact'
+          }
+        });
+        const countHeader = response.headers.get('content-range') || '';
+        const total = countHeader.includes('/') ? countHeader.split('/').pop() : null;
+        document.getElementById('stat-profils').textContent = total && total !== '*' ? total : 'Indispo';
+      } catch (_) {
+        document.getElementById('stat-profils').textContent = 'Indispo';
+        document.getElementById('stat-api').textContent = 'Lecture limitee';
+      }
+    }
+
+    function setupCommandesUi() {
+      const target = document.getElementById('cmd-target');
+      const msg = document.getElementById('cmd-message');
+      const out = document.getElementById('cmd-output');
+
+      function makeSay() {
+        const text = (msg.value || '').trim() || 'Annonce serveur';
+        out.textContent = `/say ${text}`;
+      }
+
+      function makeTell() {
+        const pseudo = (target.value || '').trim() || 'joueur';
+        const text = (msg.value || '').trim() || 'Message staff';
+        out.textContent = `/tell ${pseudo} ${text}`;
+      }
+
+      document.getElementById('cmd-say').addEventListener('click', makeSay);
+      document.getElementById('cmd-tell').addEventListener('click', makeTell);
+      document.getElementById('cmd-copy').addEventListener('click', async () => {
+        try { await navigator.clipboard.writeText(out.textContent || ''); } catch (_) {}
+      });
+    }
+
+    function setupModerationUi() {
+      const target = document.getElementById('mod-target');
+      const reason = document.getElementById('mod-reason');
+      const out = document.getElementById('mod-output');
+
+      function makeKick() {
+        const pseudo = (target.value || '').trim() || 'joueur';
+        const why = (reason.value || '').trim() || 'Regles du serveur';
+        out.textContent = `/kick ${pseudo} ${why}`;
+      }
+
+      function makeBan() {
+        const pseudo = (target.value || '').trim() || 'joueur';
+        const why = (reason.value || '').trim() || 'Regles du serveur';
+        out.textContent = `/ban ${pseudo} ${why}`;
+      }
+
+      document.getElementById('mod-kick').addEventListener('click', makeKick);
+      document.getElementById('mod-ban').addEventListener('click', makeBan);
+      document.getElementById('mod-copy').addEventListener('click', async () => {
+        try { await navigator.clipboard.writeText(out.textContent || ''); } catch (_) {}
+      });
     }
 
     async function logoutAndRefresh() {
@@ -416,7 +681,7 @@
         return;
       }
 
-      document.getElementById('admin-email').textContent = email;
+      await chargerStatsAdmin(session, email);
       showState('state-admin');
     }
 
@@ -431,6 +696,11 @@
         verifySecondFactor();
       }
     });
+    document.querySelectorAll('[data-view-tab]').forEach((btn) => {
+      btn.addEventListener('click', () => setAdminView(btn.dataset.viewTab));
+    });
+    setupCommandesUi();
+    setupModerationUi();
 
     client.auth.onAuthStateChange(() => {
       renderAccessState();
