@@ -233,9 +233,6 @@
       <div class="eyebrow">Bloc-Coin</div>
       <h1>Adminpanel</h1>
       <p class="lead">Page reservee au compte administrateur. Meme avec l'URL directe, l'acces reste bloque tant que le bon compte n'est pas connecte.</p>
-      <div class="actions">
-        <a class="btn secondary" href="index.html">Retour index</a>
-      </div>
     </section>
 
     <section class="panel state active" id="state-loading">
@@ -258,9 +255,6 @@
         <span class="status-label">Compte connecte</span>
         <span class="status-value" id="forbidden-email">-</span>
       </div>
-      <div class="actions">
-        <button class="btn secondary" id="btn-logout" type="button">Se deconnecter</button>
-      </div>
     </section>
 
     <section class="panel state" id="state-second-factor">
@@ -276,7 +270,6 @@
       </div>
       <div class="actions">
         <button class="btn" id="btn-verify-second" type="button">Verifier</button>
-        <button class="btn secondary" id="btn-logout-second" type="button">Se deconnecter</button>
       </div>
       <p class="inline-note" id="second-factor-note"></p>
     </section>
@@ -379,7 +372,6 @@
         <a class="btn" href="AdminCommandes.html">Commandes page</a>
         <a class="btn" href="AdminModeration.html">Moderation page</a>
         <a class="btn" href="AdminLogs.html">Logs page</a>
-        <button class="btn secondary" id="btn-logout-admin" type="button">Se deconnecter</button>
       </div>
     </section>
   </main>
@@ -718,17 +710,21 @@
       showState('state-admin');
     }
 
-    document.getElementById('btn-login-google').addEventListener('click', loginGoogle);
-    document.getElementById('btn-logout').addEventListener('click', logoutAndRefresh);
-    document.getElementById('btn-logout-admin').addEventListener('click', logoutAndRefresh);
-    document.getElementById('btn-logout-second').addEventListener('click', logoutAndRefresh);
-    document.getElementById('btn-verify-second').addEventListener('click', verifySecondFactor);
-    document.getElementById('admin-second-password').addEventListener('keydown', (event) => {
-      if (event.key === 'Enter') {
-        event.preventDefault();
-        verifySecondFactor();
-      }
-    });
+    const btnLoginGoogle = document.getElementById('btn-login-google');
+    if (btnLoginGoogle) btnLoginGoogle.addEventListener('click', loginGoogle);
+
+    const btnVerifySecond = document.getElementById('btn-verify-second');
+    if (btnVerifySecond) btnVerifySecond.addEventListener('click', verifySecondFactor);
+
+    const inputSecondPassword = document.getElementById('admin-second-password');
+    if (inputSecondPassword) {
+      inputSecondPassword.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          verifySecondFactor();
+        }
+      });
+    }
     document.querySelectorAll('[data-view-tab]').forEach((btn) => {
       btn.addEventListener('click', () => setAdminView(btn.dataset.viewTab));
     });
