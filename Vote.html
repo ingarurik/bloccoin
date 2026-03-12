@@ -2,8 +2,106 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <meta http-equiv="refresh" content="0; url=construction.html?page=Vote" />
-  <title>Redirection...</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vote</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --bg: #0b1224;
+      --panel: #101a33;
+      --text: #e8dcc8;
+      --muted: #a7b3c8;
+      --gold: #f0c040;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      font-family: 'Cinzel', serif;
+      background: radial-gradient(circle at top, #122041 0%, var(--bg) 55%);
+      color: var(--text);
+    }
+
+    .card {
+      width: min(680px, 100%);
+      border: 1px solid rgba(240, 192, 64, 0.25);
+      background: rgba(16, 26, 51, 0.92);
+      padding: 24px;
+      box-shadow: 0 20px 70px rgba(0, 0, 0, 0.45);
+      text-align: center;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: 1.1rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--gold);
+    }
+
+    p {
+      margin: 0;
+      color: var(--muted);
+      font-family: 'Crimson Text', serif;
+      font-size: 1.05rem;
+    }
+
+    #ok { display: none; }
+    #ko { display: none; }
+  </style>
 </head>
-<body></body>
+<body>
+  <div class="card" id="ko">
+    <h1>Vote</h1>
+    <p>Merci de vous connecter pour acceder a cette page</p>
+  </div>
+
+  <div class="card" id="ok">
+    <h1>Vote</h1>
+    <p>salut</p>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://cimyrkybpnssyeyobyrh.supabase.co';
+    const SUPABASE_ANON = 'sb_publishable_XAfHoy6vcPskEW1vNJaAkA_92iGeE-v';
+
+    const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
+      auth: {
+        flowType: 'pkce',
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        multiTab: false,
+        storageKey: 'sb-cimyrkybpnssyeyobyrh-auth-token'
+      }
+    });
+
+    async function afficherSelonConnexion() {
+      const ok = document.getElementById('ok');
+      const ko = document.getElementById('ko');
+
+      let connecte = false;
+      try {
+        const { data: { session } } = await client.auth.getSession();
+        connecte = !!(session && session.user);
+      } catch (_) {
+        connecte = false;
+      }
+
+      ok.style.display = connecte ? 'block' : 'none';
+      ko.style.display = connecte ? 'none' : 'block';
+    }
+
+    client.auth.onAuthStateChange(() => {
+      afficherSelonConnexion();
+    });
+
+    afficherSelonConnexion();
+  </script>
+</body>
 </html>
