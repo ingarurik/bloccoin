@@ -1031,6 +1031,41 @@
 </div>
 
 <script>
+  (function setupConnexionFallback() {
+    const btnConnexion = document.getElementById('btn-connexion');
+    const overlayAuth = document.getElementById('auth-overlay');
+    const btnFermer = document.getElementById('auth-fermer');
+
+    if (!btnConnexion || !overlayAuth) return;
+
+    function ouvrirFallback() {
+      overlayAuth.classList.add('actif');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function fermerFallback() {
+      overlayAuth.classList.remove('actif');
+      document.body.style.overflow = '';
+    }
+
+    if (!btnConnexion.dataset.fallbackBound) {
+      btnConnexion.addEventListener('click', ouvrirFallback);
+      btnConnexion.dataset.fallbackBound = '1';
+    }
+
+    if (btnFermer && !btnFermer.dataset.fallbackBound) {
+      btnFermer.addEventListener('click', fermerFallback);
+      btnFermer.dataset.fallbackBound = '1';
+    }
+
+    if (!overlayAuth.dataset.fallbackBound) {
+      overlayAuth.addEventListener('click', (e) => {
+        if (e.target === overlayAuth) fermerFallback();
+      });
+      overlayAuth.dataset.fallbackBound = '1';
+    }
+  })();
+
   /* ── STARS ── */
   const canvas = document.getElementById('sky-canvas');
   const ctx = canvas.getContext('2d');
@@ -1099,36 +1134,6 @@
   reveals.forEach(el => revealObs.observe(el));
 
   /* ═══ SIDEBAR ═══ */
-  const ADMIN_EMAIL = 'ingaruriksonic@gmail.com';
-  const AUTH_STORAGE_KEY = 'sb-cimyrkybpnssyeyobyrh-auth-token';
-
-  function emailDepuisStockageAuth() {
-    try {
-      const raw = localStorage.getItem(AUTH_STORAGE_KEY) || sessionStorage.getItem(AUTH_STORAGE_KEY);
-      if (!raw) return '';
-      const parsed = JSON.parse(raw);
-      const session = parsed?.currentSession || parsed?.session || parsed;
-      return (session?.user?.email || '').trim().toLowerCase();
-    } catch (_) {
-      return '';
-    }
-  }
-
-  function synchroniserEtatAdmin() {
-    const email = emailDepuisStockageAuth();
-    const estAdmin = email === ADMIN_EMAIL;
-    document.body.classList.toggle('auth-admin', estAdmin);
-  }
-
-  window.addEventListener('bloccoin-admin-change', (event) => {
-    const estAdmin = !!event?.detail?.isAdmin;
-    document.body.classList.toggle('auth-admin', estAdmin);
-  });
-
-  window.addEventListener('storage', synchroniserEtatAdmin);
-  setInterval(synchroniserEtatAdmin, 1200);
-  synchroniserEtatAdmin();
-
   const CATS = {
     accueil: { ico:'🏠', ttl:'Accueil', pages:[
       {ico:'📄',lbl:'Présentation',file:'Présentation.html'},
