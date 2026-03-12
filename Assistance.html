@@ -331,7 +331,7 @@
       <p class="guide">
         Remplis ce formulaire puis clique sur envoyer: tu recevras la demande par e-mail avec les questions et les reponses.
       </p>
-      <form id="support-form" class="support-form" method="POST" novalidate>
+      <form id="support-form" class="support-form" method="POST" action="https://formspree.io/f/mpqyrazk" novalidate>
         <div class="form-grid">
           <div class="field">
             <label for="pseudo">Pseudo Minecraft *</label>
@@ -339,7 +339,7 @@
           </div>
           <div class="field">
             <label for="email">E-mail de reponse *</label>
-            <input id="email" name="email" type="email" required />
+            <input id="email" name="email" type="email" autocomplete="email" required />
           </div>
           <div class="field">
             <label for="categorie">Categorie *</label>
@@ -367,6 +367,7 @@
         </div>
 
         <input type="hidden" name="_subject" value="Bloc-Coin | Nouvelle demande assistance" />
+        <input type="hidden" id="replyto" name="_replyto" value="" />
         <input type="text" id="website" name="website" class="hp" tabindex="-1" autocomplete="off" />
 
         <div class="form-footer">
@@ -374,9 +375,7 @@
           <span id="form-feedback" class="form-feedback" aria-live="polite"></span>
         </div>
       </form>
-      <p class="help-note">
-        Important: le formulaire est deja integre. Pour le rendre actif, remplace simplement l'endpoint Formspree dans le script en bas de page.
-      </p>
+      <p class="help-note">Formulaire actif: envoi direct vers Formspree puis reception sur la boite support configuree.</p>
       <p class="help-note">Adresse de reception configuree: ingaruriksonic@gmail.com</p>
       <div class="code">const FORMSPREE_ENDPOINT = "https://formspree.io/f/mpqyrazk";</div>
     </section>
@@ -428,21 +427,31 @@
       }
 
       const formData = new FormData(supportForm);
-      const pseudo = (formData.get("pseudo") || "").toString();
-      const email = (formData.get("email") || "").toString();
-      const categorie = (formData.get("categorie") || "").toString();
-      const objet = (formData.get("objet") || "").toString();
-      const message = (formData.get("message") || "").toString();
-      const capture = (formData.get("capture") || "").toString();
+      const pseudo = (formData.get("pseudo") || "").toString().trim();
+      const email = (formData.get("email") || "").toString().trim();
+      const categorie = (formData.get("categorie") || "").toString().trim();
+      const objet = (formData.get("objet") || "").toString().trim();
+      const message = (formData.get("message") || "").toString().trim();
+      const capture = (formData.get("capture") || "").toString().trim();
 
-      const resume =
-        "Pseudo Minecraft: " + pseudo + "\n" +
-        "Email: " + email + "\n" +
-        "Categorie: " + categorie + "\n" +
-        "Objet: " + objet + "\n" +
-        "Description: " + message + "\n" +
-        "Capture: " + (capture || "Aucune") + "\n";
-      formData.set("resume", resume);
+      document.getElementById("replyto").value = email;
+
+      const payload = {
+        pseudo: pseudo,
+        email: email,
+        _replyto: email,
+        categorie: categorie,
+        objet: objet,
+        message: message,
+        capture: capture || "Aucune",
+        resume:
+          "Pseudo Minecraft: " + pseudo + "\n" +
+          "Email: " + email + "\n" +
+          "Categorie: " + categorie + "\n" +
+          "Objet: " + objet + "\n" +
+          "Description: " + message + "\n" +
+          "Capture: " + (capture || "Aucune")
+      };
 
       submitBtn.disabled = true;
       submitBtn.style.opacity = "0.6";
@@ -451,11 +460,16 @@
       try {
         const response = await fetch(FORMSPREE_ENDPOINT, {
           method: "POST",
-          body: formData,
-          headers: { Accept: "application/json" }
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json"
+          },
+          body: JSON.stringify(payload)
         });
 
         if (!response.ok) {
+          const details = await response.text();
+          console.error("Formspree error:", details);
           throw new Error("request_failed");
         }
 
