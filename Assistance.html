@@ -3,67 +3,300 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>En construction</title>
+  <title>Bloc-Coin | Assistance</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
   <style>
-    :root { --gold:#f0c040; --sky:#060e1f; --text:#e8dcc8; --dim:#9a8a72; --line:rgba(240,192,64,.2); --card:rgba(10,18,35,.88); }
+    :root {
+      --gold:#f0c040;
+      --gold-light:#ffe87a;
+      --sky:#060e1f;
+      --text:#e8dcc8;
+      --dim:#9a8a72;
+      --line:rgba(240,192,64,.2);
+      --card:rgba(10,18,35,.88);
+    }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { min-height: 100%; }
     body {
       font-family: 'Crimson Text', Georgia, serif;
       color: var(--text);
       background: radial-gradient(circle at 15% 10%, rgba(240,192,64,.08), transparent 35%), radial-gradient(circle at 85% 15%, rgba(120,160,255,.12), transparent 40%), linear-gradient(180deg, #08122a, var(--sky));
-      overflow: hidden;
+      overflow-x: hidden;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(240,192,64,.45) rgba(255,255,255,.06);
     }
+    body::-webkit-scrollbar { width: 10px; }
+    body::-webkit-scrollbar-track { background: rgba(255,255,255,.06); }
+    body::-webkit-scrollbar-thumb { background: rgba(240,192,64,.45); border-radius: 8px; }
     .cloud-layer { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
     .cloud { position: absolute; border-radius: 50%; filter: blur(38px); opacity: .12; animation: drift linear infinite; }
     .cloud:nth-child(1){ width:420px;height:140px;top:8%;left:-28%;background:rgba(170,204,255,.35);animation-duration:80s; }
     .cloud:nth-child(2){ width:520px;height:170px;top:42%;left:-34%;background:rgba(255,255,255,.2);animation-duration:115s;animation-delay:-22s; }
     .cloud:nth-child(3){ width:380px;height:120px;top:72%;left:-24%;background:rgba(240,192,64,.18);animation-duration:95s;animation-delay:-45s; }
-    .scene { position: relative; z-index: 1; min-height: 100vh; display: grid; place-items: center; padding: 24px; }
-    .panel { position: relative; width: min(860px,100%); border: 1px solid var(--line); background: linear-gradient(140deg, rgba(240,192,64,.1), transparent 30%), var(--card); box-shadow: 0 18px 60px rgba(0,0,0,.45); padding: 56px 42px; text-align: center; overflow: hidden; animation: rise .7s ease both; }
-    .island { position: absolute; pointer-events: none; opacity: .9; }
-    .island-1 { bottom: 10%; left: 3%; animation: floatA 7s ease-in-out infinite; }
-    .island-2 { top: 12%; right: 4%; animation: floatB 9s ease-in-out infinite; }
-    .island-3 { bottom: 18%; right: 34%; animation: floatA 10s ease-in-out infinite 1.5s; }
-    .island svg { filter: drop-shadow(0 12px 40px rgba(0,0,0,.6)); }
+    .wrap { position: relative; z-index: 1; max-width: 1080px; margin: 0 auto; padding: 56px 20px 90px; }
+    .hero { border: 1px solid var(--line); background: linear-gradient(140deg, rgba(240,192,64,.08), transparent 30%), var(--card); padding: 42px 30px; box-shadow: 0 18px 60px rgba(0,0,0,.45); animation: rise .7s ease both; }
     .eyebrow { font-family: 'Cinzel', serif; font-size: .66rem; letter-spacing: .25em; color: var(--gold); text-transform: uppercase; margin-bottom: 14px; }
-    .title { font-family: 'Cinzel Decorative', serif; font-size: clamp(2rem, 8vw, 4.1rem); line-height: 1.05; margin-bottom: 12px; color: var(--gold); text-transform: uppercase; user-select: none; }
-    .title span { display: inline-block; transition: transform .28s ease; }
-    .title:hover span { transform: translateY(-8px); transition-delay: calc(var(--i) * 35ms); }
-    .sub { font-family: 'Cinzel', serif; font-size: clamp(.8rem,2.2vw,1.02rem); letter-spacing: .14em; text-transform: uppercase; color: var(--dim); }
+    h1 { font-family: 'Cinzel Decorative', serif; font-size: clamp(1.9rem, 6vw, 3.6rem); line-height: 1.08; margin-bottom: 12px; color: var(--gold); }
+    .lead { color: var(--dim); font-size: clamp(1rem, 2vw, 1.18rem); max-width: 840px; line-height: 1.72; }
+    .hero-actions { margin-top: 18px; display: flex; gap: 10px; flex-wrap: wrap; }
+    .cta {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Cinzel', serif;
+      font-size: 0.78rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--sky);
+      background: linear-gradient(135deg, var(--gold-light), var(--gold));
+      border: none;
+      padding: 10px 24px;
+      text-decoration: none;
+      cursor: pointer;
+      clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+      font-weight: 700;
+      transition: opacity 0.3s, transform 0.2s;
+    }
+    .cta:hover { opacity: .85; transform: translateY(-1px); }
+    .cta.secondary {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid rgba(232,220,200,0.3);
+    }
+    .cta.secondary:hover { border-color: var(--gold); color: var(--gold); opacity: 1; }
+
+    .section {
+      border: 1px solid var(--line);
+      background: var(--card);
+      padding: 22px;
+      margin-top: 14px;
+      opacity: 0;
+      animation: rise .62s ease forwards;
+    }
+    .section:nth-of-type(2) { animation-delay: 0.1s; }
+    .section:nth-of-type(3) { animation-delay: 0.18s; }
+    .section:nth-of-type(4) { animation-delay: 0.26s; }
+    .section:nth-of-type(5) { animation-delay: 0.34s; }
+
+    h2 {
+      font-family: 'Cinzel', serif;
+      color: var(--gold);
+      font-size: 0.9rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .card {
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(8,16,30,0.8);
+      padding: 12px;
+    }
+    .card-top {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      color: var(--gold-light);
+      font-family: 'Cinzel', serif;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 0.7rem;
+    }
+    .card p { color: var(--dim); font-size: 0.98rem; line-height: 1.65; }
+
+    details {
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(8,16,30,0.8);
+      padding: 12px;
+      margin-bottom: 8px;
+    }
+    summary {
+      cursor: pointer;
+      font-family: 'Cinzel', serif;
+      color: var(--gold-light);
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      font-size: .68rem;
+    }
+    details p {
+      color: var(--dim);
+      line-height: 1.65;
+      margin-top: 8px;
+      font-size: .98rem;
+    }
+
+    .guide {
+      border-left: 2px solid rgba(240,192,64,.35);
+      padding-left: 12px;
+      color: var(--dim);
+      line-height: 1.7;
+      font-size: .98rem;
+      margin-bottom: 10px;
+    }
+    .code {
+      margin-top: 8px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(8,16,30,0.9);
+      padding: 12px;
+      font-family: 'Courier New', monospace;
+      font-size: .84rem;
+      color: #d8e2f2;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .status-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .stat {
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(8,16,30,0.8);
+      padding: 10px 12px;
+    }
+    .stat-label {
+      display: block;
+      font-family: 'Cinzel', serif;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      font-size: .6rem;
+      color: var(--dim);
+      margin-bottom: 4px;
+    }
+    .stat-value {
+      display: block;
+      font-family: 'Cinzel', serif;
+      letter-spacing: .06em;
+      font-size: .78rem;
+      color: var(--gold-light);
+      text-transform: uppercase;
+    }
+
+    .p { color: var(--dim); line-height: 1.72; margin-bottom: 10px; }
     @keyframes rise { from { opacity:0; transform: translateY(16px);} to { opacity:1; transform: translateY(0);} }
     @keyframes drift { from { transform: translateX(0);} to { transform: translateX(calc(100vw + 900px));} }
-    @keyframes floatA { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-16px)} }
-    @keyframes floatB { 0%,100%{transform:translateY(0)} 50%{transform:translateY(12px)} }
-    @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } .title:hover span { transform: none; } }
-    @media (max-width: 800px) { .panel { padding: 32px 20px; } .island { display: none; } }
+    @media (max-width: 860px) {
+      .wrap { padding: 40px 14px 70px; }
+      .hero { padding: 28px 20px; }
+      .section { padding: 16px; }
+      .grid { grid-template-columns: 1fr; }
+      .status-row { grid-template-columns: 1fr; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      * { animation: none !important; transition: none !important; }
+      .section { opacity: 1; }
+    }
   </style>
 </head>
 <body>
-  <div class="cloud-layer" aria-hidden="true"><div class="cloud"></div><div class="cloud"></div><div class="cloud"></div></div>
-  <main class="scene">
-    <section class="panel">
-      <div class="island island-1" aria-hidden="true"><svg width="120" height="60" viewBox="0 0 120 60"><ellipse cx="60" cy="52" rx="55" ry="9" fill="#1a1208" opacity="0.6"/><rect x="20" y="22" width="80" height="32" rx="3" fill="#2d1f10"/><rect x="20" y="18" width="80" height="6" rx="2" fill="#3d8c3a"/></svg></div>
-      <div class="island island-2" aria-hidden="true"><svg width="80" height="48" viewBox="0 0 80 48"><ellipse cx="40" cy="42" rx="36" ry="7" fill="#1a1208" opacity="0.5"/><rect x="10" y="18" width="60" height="26" rx="3" fill="#2d1f10"/><rect x="10" y="14" width="60" height="6" rx="2" fill="#3d8c3a"/></svg></div>
-      <div class="island island-3" aria-hidden="true"><svg width="100" height="52" viewBox="0 0 100 52"><ellipse cx="50" cy="44" rx="43" ry="7" fill="#1a1208" opacity="0.6"/><rect x="14" y="20" width="72" height="24" rx="3" fill="#2d1f10"/><rect x="14" y="16" width="72" height="6" rx="2" fill="#3d8c3a"/></svg></div>
+  <div class="cloud-layer" aria-hidden="true">
+    <div class="cloud"></div>
+    <div class="cloud"></div>
+    <div class="cloud"></div>
+  </div>
+
+  <main class="wrap">
+    <section class="hero">
       <div class="eyebrow">Bloc-Coin</div>
-      <h1 class="title" id="title">En construction</h1>
-      <div class="sub">Assistance - en construction</div>
+      <h1>Assistance</h1>
+      <p class="lead">
+        Une page d'aide centralisee pour accompagner les joueurs sur les problemes les plus frequents:
+        connexion Google, connexion au serveur Minecraft, vote, et questions de compte.
+      </p>
+      <div class="hero-actions">
+        <a class="cta" href="https://discord.gg/uC6wHkNwYH" target="_blank" rel="noopener noreferrer">Rejoindre le Discord d'aide</a>
+        <a class="cta secondary" href="index.html">Retour a l'accueil</a>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Aide rapide</h2>
+      <div class="grid">
+        <article class="card">
+          <div class="card-top">Connexion Google</div>
+          <p>Si la connexion ne s'affiche pas, recharge la page puis clique "Continuer avec Google" depuis le modal.</p>
+        </article>
+        <article class="card">
+          <div class="card-top">Connexion serveur</div>
+          <p>Verifie l'IP <strong>play.bloccoin.fr</strong>, la version Java et l'onglet multijoueur de Minecraft.</p>
+        </article>
+        <article class="card">
+          <div class="card-top">Votes & recompenses</div>
+          <p>Un vote 1h et un vote 3h par compte. Les delais se remettent automatiquement apres cooldown.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>FAQ</h2>
+      <details>
+        <summary>Je n'arrive pas a me connecter avec Google</summary>
+        <p>Efface le cache du navigateur, reconnecte-toi, et verifie que les popups ne sont pas bloquees. Si besoin, passe par le Discord d'aide.</p>
+      </details>
+      <details>
+        <summary>Je suis connecte au site mais pas au serveur Minecraft</summary>
+        <p>Ce sont deux systemes differents. Le site gere le compte web; Minecraft demande l'IP serveur correcte et une version compatible.</p>
+      </details>
+      <details>
+        <summary>Le vote est bloque</summary>
+        <p>Attends la fin du timer 1h/3h sur la page Vote. Si le probleme persiste, envoie ton pseudo et une capture sur le Discord d'assistance.</p>
+      </details>
+    </section>
+
+    <section class="section">
+      <h2>Formulaire d'aide gratuit (envoi par mail)</h2>
+      <p class="guide">
+        Option la plus simple et gratuite: <strong>Formspree</strong>.
+        Tu crees un formulaire HTML, Formspree recoit les soumissions et te les envoie par e-mail.
+      </p>
+      <p class="guide">
+        Etapes:
+        1. Creer un compte gratuit sur Formspree.
+        2. Creer un formulaire et recuperer l'URL `https://formspree.io/f/xxxxx`.
+        3. Mettre cette URL dans l'attribut `action` du formulaire.
+        4. Ajouter les champs utiles: pseudo, email, categorie de probleme, description, capture.
+      </p>
+      <div class="code">&lt;form action="https://formspree.io/f/TON_ID" method="POST"&gt;
+  &lt;input type="text" name="pseudo" placeholder="Pseudo joueur" required /&gt;
+  &lt;input type="email" name="email" placeholder="Email" required /&gt;
+  &lt;select name="categorie" required&gt;
+    &lt;option value="google"&gt;Connexion Google&lt;/option&gt;
+    &lt;option value="serveur"&gt;Connexion serveur&lt;/option&gt;
+    &lt;option value="vote"&gt;Vote&lt;/option&gt;
+    &lt;option value="autre"&gt;Autre&lt;/option&gt;
+  &lt;/select&gt;
+  &lt;textarea name="message" placeholder="Explique ton probleme" required&gt;&lt;/textarea&gt;
+  &lt;button type="submit"&gt;Envoyer&lt;/button&gt;
+&lt;/form&gt;</div>
+      <p class="p" style="margin-top:10px;">Alternatives gratuites: Google Forms (simple) ou Tally (interface plus propre).</p>
+    </section>
+
+    <section class="section">
+      <h2>Etat support</h2>
+      <div class="status-row">
+        <div class="stat">
+          <span class="stat-label">Canal principal</span>
+          <span class="stat-value">Discord</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Disponibilite</span>
+          <span class="stat-value">Selon moderation</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Priorite</span>
+          <span class="stat-value">Connexion / Vote</span>
+        </div>
+      </div>
     </section>
   </main>
-  <script>
-    const t = document.getElementById('title');
-    const chars = t.textContent.split('');
-    t.textContent = '';
-    chars.forEach((c, i) => {
-      const s = document.createElement('span');
-      s.textContent = c === ' ' ? '\u00A0' : c;
-      s.style.setProperty('--i', i.toString());
-      t.appendChild(s);
-    });
-  </script>
 </body>
 </html>
