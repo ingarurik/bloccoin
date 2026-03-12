@@ -25,11 +25,6 @@
     .cloud:nth-child(3){ width:500px;height:170px;bottom:-120px;right:-170px;background:rgba(240,192,64,.16);animation: edgeA 21s ease-in-out infinite; }
     .scene { position: relative; z-index: 1; min-height: 100vh; display: grid; place-items: center; padding: 24px; }
     .panel { position: relative; width: min(860px,100%); border: 1px solid var(--line); background: linear-gradient(140deg, rgba(240,192,64,.1), transparent 30%), var(--card); box-shadow: 0 18px 60px rgba(0,0,0,.45); padding: 56px 42px; text-align: center; overflow: hidden; animation: rise .7s ease both; }
-    .island { position: absolute; pointer-events: none; opacity: .9; }
-    .island-1 { bottom: 10%; left: 3%; animation: floatA 7s ease-in-out infinite; }
-    .island-2 { top: 12%; right: 4%; animation: floatB 9s ease-in-out infinite; }
-    .island-3 { bottom: 18%; right: 34%; animation: floatA 10s ease-in-out infinite 1.5s; }
-    .island svg { filter: drop-shadow(0 12px 40px rgba(0,0,0,.6)); }
     .eyebrow { font-family: 'Cinzel', serif; font-size: .66rem; letter-spacing: .25em; color: var(--gold); text-transform: uppercase; margin-bottom: 14px; }
     .title { font-family: 'Cinzel Decorative', serif; font-size: clamp(2rem, 8vw, 4.1rem); line-height: 1.05; margin-bottom: 12px; color: var(--gold); text-transform: uppercase; user-select: none; }
     .title span { display: inline-block; transition: transform .28s ease; }
@@ -120,28 +115,20 @@
     @keyframes rise { from { opacity:0; transform: translateY(16px);} to { opacity:1; transform: translateY(0);} }
     @keyframes edgeA { 0%,100% { transform: translate(0,0);} 50% { transform: translate(45px, -10px);} }
     @keyframes edgeB { 0%,100% { transform: translate(0,0);} 50% { transform: translate(-45px, 12px);} }
-    @keyframes floatA { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-16px)} }
-    @keyframes floatB { 0%,100%{transform:translateY(0)} 50%{transform:translateY(12px)} }
     @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } .title:hover span { transform: none; } }
-    @media (max-width: 800px) { .panel { padding: 32px 20px; } .island { display: none; } }
+    @media (max-width: 800px) { .panel { padding: 32px 20px; } }
   </style>
 </head>
 <body>
   <div class="cloud-layer" aria-hidden="true"><div class="cloud"></div><div class="cloud"></div><div class="cloud"></div></div>
   <main class="scene">
     <section class="panel" id="ko">
-      <div class="island island-1" aria-hidden="true"><svg width="120" height="60" viewBox="0 0 120 60"><ellipse cx="60" cy="52" rx="55" ry="9" fill="#1a1208" opacity="0.6"/><rect x="20" y="22" width="80" height="32" rx="3" fill="#2d1f10"/><rect x="20" y="18" width="80" height="6" rx="2" fill="#3d8c3a"/></svg></div>
-      <div class="island island-2" aria-hidden="true"><svg width="80" height="48" viewBox="0 0 80 48"><ellipse cx="40" cy="42" rx="36" ry="7" fill="#1a1208" opacity="0.5"/><rect x="10" y="18" width="60" height="26" rx="3" fill="#2d1f10"/><rect x="10" y="14" width="60" height="6" rx="2" fill="#3d8c3a"/></svg></div>
-      <div class="island island-3" aria-hidden="true"><svg width="100" height="52" viewBox="0 0 100 52"><ellipse cx="50" cy="44" rx="43" ry="7" fill="#1a1208" opacity="0.6"/><rect x="14" y="20" width="72" height="24" rx="3" fill="#2d1f10"/><rect x="14" y="16" width="72" height="6" rx="2" fill="#3d8c3a"/></svg></div>
       <div class="eyebrow">Bloc-Coin</div>
       <h1 class="title" id="title-ko">Vote</h1>
       <div class="sub">Merci de vous connecter pour acceder a cette page</div>
     </section>
 
     <section class="panel" id="ok">
-      <div class="island island-1" aria-hidden="true"><svg width="120" height="60" viewBox="0 0 120 60"><ellipse cx="60" cy="52" rx="55" ry="9" fill="#1a1208" opacity="0.6"/><rect x="20" y="22" width="80" height="32" rx="3" fill="#2d1f10"/><rect x="20" y="18" width="80" height="6" rx="2" fill="#3d8c3a"/></svg></div>
-      <div class="island island-2" aria-hidden="true"><svg width="80" height="48" viewBox="0 0 80 48"><ellipse cx="40" cy="42" rx="36" ry="7" fill="#1a1208" opacity="0.5"/><rect x="10" y="18" width="60" height="26" rx="3" fill="#2d1f10"/><rect x="10" y="14" width="60" height="6" rx="2" fill="#3d8c3a"/></svg></div>
-      <div class="island island-3" aria-hidden="true"><svg width="100" height="52" viewBox="0 0 100 52"><ellipse cx="50" cy="44" rx="43" ry="7" fill="#1a1208" opacity="0.6"/><rect x="14" y="20" width="72" height="24" rx="3" fill="#2d1f10"/><rect x="14" y="16" width="72" height="6" rx="2" fill="#3d8c3a"/></svg></div>
       <div class="eyebrow">Bloc-Coin</div>
       <h1 class="title" id="title-ok">Vote</h1>
       <div class="sub">Gagne des recompenses en votant regulierement</div>
