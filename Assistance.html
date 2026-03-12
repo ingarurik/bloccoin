@@ -133,6 +133,79 @@
       font-size: .98rem;
     }
 
+    .support-form {
+      margin-top: 10px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(8,16,30,0.86);
+      padding: 14px;
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .field.full { grid-column: 1 / -1; }
+    .field label {
+      font-family: 'Cinzel', serif;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      font-size: .62rem;
+      color: var(--gold-light);
+    }
+    .field input,
+    .field select,
+    .field textarea {
+      width: 100%;
+      border: 1px solid rgba(255,255,255,0.18);
+      background: rgba(5,10,20,0.88);
+      color: var(--text);
+      padding: 10px 12px;
+      font-family: 'Crimson Text', Georgia, serif;
+      font-size: 1rem;
+      outline: none;
+    }
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+      border-color: rgba(240,192,64,.7);
+      box-shadow: 0 0 0 2px rgba(240,192,64,.15);
+    }
+    .field textarea { min-height: 120px; resize: vertical; }
+    .help-note {
+      color: var(--dim);
+      font-size: .95rem;
+      line-height: 1.64;
+      margin-top: 8px;
+    }
+    .form-footer {
+      margin-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+    .form-feedback {
+      min-height: 18px;
+      font-size: .93rem;
+      color: var(--dim);
+    }
+    .form-feedback.ok { color: #9de7aa; }
+    .form-feedback.err { color: #ffb3b3; }
+    .hp {
+      position: absolute;
+      left: -9999px;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      opacity: 0;
+      pointer-events: none;
+    }
+
     .guide {
       border-left: 2px solid rgba(240,192,64,.35);
       padding-left: 12px;
@@ -190,6 +263,7 @@
       .section { padding: 16px; }
       .grid { grid-template-columns: 1fr; }
       .status-row { grid-template-columns: 1fr; }
+      .form-grid { grid-template-columns: 1fr; }
     }
     @media (prefers-reduced-motion: reduce) {
       * { animation: none !important; transition: none !important; }
@@ -255,29 +329,55 @@
     <section class="section">
       <h2>Formulaire d'aide gratuit (envoi par mail)</h2>
       <p class="guide">
-        Option la plus simple et gratuite: <strong>Formspree</strong>.
-        Tu crees un formulaire HTML, Formspree recoit les soumissions et te les envoie par e-mail.
+        Remplis ce formulaire puis clique sur envoyer: tu recevras la demande par e-mail avec les questions et les reponses.
       </p>
-      <p class="guide">
-        Etapes:
-        1. Creer un compte gratuit sur Formspree.
-        2. Creer un formulaire et recuperer l'URL `https://formspree.io/f/xxxxx`.
-        3. Mettre cette URL dans l'attribut `action` du formulaire.
-        4. Ajouter les champs utiles: pseudo, email, categorie de probleme, description, capture.
+      <form id="support-form" class="support-form" method="POST" novalidate>
+        <div class="form-grid">
+          <div class="field">
+            <label for="pseudo">Pseudo Minecraft *</label>
+            <input id="pseudo" name="pseudo" type="text" maxlength="32" required />
+          </div>
+          <div class="field">
+            <label for="email">E-mail de reponse *</label>
+            <input id="email" name="email" type="email" required />
+          </div>
+          <div class="field">
+            <label for="categorie">Categorie *</label>
+            <select id="categorie" name="categorie" required>
+              <option value="">Selectionne une categorie</option>
+              <option value="Connexion Google">Connexion Google</option>
+              <option value="Connexion serveur">Connexion serveur</option>
+              <option value="Vote">Vote</option>
+              <option value="Compte">Compte</option>
+              <option value="Autre">Autre</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="objet">Objet *</label>
+            <input id="objet" name="objet" type="text" maxlength="120" required />
+          </div>
+          <div class="field full">
+            <label for="message">Description du probleme *</label>
+            <textarea id="message" name="message" maxlength="2500" required></textarea>
+          </div>
+          <div class="field full">
+            <label for="capture">Lien capture (optionnel)</label>
+            <input id="capture" name="capture" type="url" placeholder="https://..." />
+          </div>
+        </div>
+
+        <input type="hidden" name="_subject" value="Bloc-Coin | Nouvelle demande assistance" />
+        <input type="text" id="website" name="website" class="hp" tabindex="-1" autocomplete="off" />
+
+        <div class="form-footer">
+          <button class="cta" id="support-submit" type="submit">Envoyer la demande</button>
+          <span id="form-feedback" class="form-feedback" aria-live="polite"></span>
+        </div>
+      </form>
+      <p class="help-note">
+        Important: le formulaire est deja integre. Pour le rendre actif, remplace simplement l'endpoint Formspree dans le script en bas de page.
       </p>
-      <div class="code">&lt;form action="https://formspree.io/f/TON_ID" method="POST"&gt;
-  &lt;input type="text" name="pseudo" placeholder="Pseudo joueur" required /&gt;
-  &lt;input type="email" name="email" placeholder="Email" required /&gt;
-  &lt;select name="categorie" required&gt;
-    &lt;option value="google"&gt;Connexion Google&lt;/option&gt;
-    &lt;option value="serveur"&gt;Connexion serveur&lt;/option&gt;
-    &lt;option value="vote"&gt;Vote&lt;/option&gt;
-    &lt;option value="autre"&gt;Autre&lt;/option&gt;
-  &lt;/select&gt;
-  &lt;textarea name="message" placeholder="Explique ton probleme" required&gt;&lt;/textarea&gt;
-  &lt;button type="submit"&gt;Envoyer&lt;/button&gt;
-&lt;/form&gt;</div>
-      <p class="p" style="margin-top:10px;">Alternatives gratuites: Google Forms (simple) ou Tally (interface plus propre).</p>
+      <div class="code">const FORMSPREE_ENDPOINT = "https://formspree.io/f/TON_ID";</div>
     </section>
 
     <section class="section">
@@ -298,5 +398,80 @@
       </div>
     </section>
   </main>
+
+  <script>
+    const FORMSPREE_ENDPOINT = "https://formspree.io/f/TON_ID";
+
+    const supportForm = document.getElementById("support-form");
+    const submitBtn = document.getElementById("support-submit");
+    const feedback = document.getElementById("form-feedback");
+
+    function setFeedback(message, type) {
+      feedback.textContent = message;
+      feedback.classList.remove("ok", "err");
+      if (type) feedback.classList.add(type);
+    }
+
+    supportForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      if (!supportForm.checkValidity()) {
+        supportForm.reportValidity();
+        return;
+      }
+
+      if (FORMSPREE_ENDPOINT.includes("TON_ID")) {
+        setFeedback("Configure d'abord ton endpoint Formspree dans la constante FORMSPREE_ENDPOINT.", "err");
+        return;
+      }
+
+      const honeypot = document.getElementById("website").value.trim();
+      if (honeypot) {
+        setFeedback("Envoi bloque.", "err");
+        return;
+      }
+
+      const formData = new FormData(supportForm);
+      const pseudo = (formData.get("pseudo") || "").toString();
+      const email = (formData.get("email") || "").toString();
+      const categorie = (formData.get("categorie") || "").toString();
+      const objet = (formData.get("objet") || "").toString();
+      const message = (formData.get("message") || "").toString();
+      const capture = (formData.get("capture") || "").toString();
+
+      const resume =
+        "Pseudo Minecraft: " + pseudo + "\n" +
+        "Email: " + email + "\n" +
+        "Categorie: " + categorie + "\n" +
+        "Objet: " + objet + "\n" +
+        "Description: " + message + "\n" +
+        "Capture: " + (capture || "Aucune") + "\n";
+      formData.set("resume", resume);
+
+      submitBtn.disabled = true;
+      submitBtn.style.opacity = "0.6";
+      setFeedback("Envoi en cours...", "");
+
+      try {
+        const response = await fetch(FORMSPREE_ENDPOINT, {
+          method: "POST",
+          body: formData,
+          headers: { Accept: "application/json" }
+        });
+
+        if (!response.ok) {
+          throw new Error("request_failed");
+        }
+
+        supportForm.reset();
+        setFeedback("Demande envoyee. Tu recevras une reponse par e-mail.", "ok");
+      } catch (error) {
+        setFeedback("Echec de l'envoi. Reessaye ou passe par le Discord d'aide.", "err");
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.style.opacity = "1";
+      }
+    });
+  </script>
 </body>
 </html>
