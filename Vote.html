@@ -4,136 +4,68 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Vote</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    :root {
-      --bg: #0b1224;
-      --panel: #101a33;
-      --text: #e8dcc8;
-      --muted: #a7b3c8;
-      --gold: #f0c040;
-      --gold-soft: #ffe2a2;
-    }
-
-    * { box-sizing: border-box; }
-
+    :root { --gold:#f0c040; --sky:#060e1f; --text:#e8dcc8; --dim:#9a8a72; --line:rgba(240,192,64,.2); --card:rgba(10,18,35,.88); }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { min-height: 100%; }
     body {
-      margin: 0;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-      font-family: 'Cinzel', serif;
-      background:
-        radial-gradient(1200px 600px at 10% -10%, rgba(240, 192, 64, 0.16), transparent 60%),
-        radial-gradient(900px 500px at 100% 0%, rgba(68, 124, 255, 0.20), transparent 60%),
-        radial-gradient(circle at top, #122041 0%, var(--bg) 55%);
+      font-family: 'Crimson Text', Georgia, serif;
       color: var(--text);
-    }
-
-    .card {
-      width: min(760px, 100%);
-      border: 1px solid rgba(240, 192, 64, 0.25);
-      background: rgba(16, 26, 51, 0.92);
-      padding: 28px;
-      box-shadow: 0 28px 90px rgba(0, 0, 0, 0.5);
-      text-align: center;
-      backdrop-filter: blur(6px);
-      position: relative;
+      background: radial-gradient(circle at 15% 10%, rgba(240,192,64,.08), transparent 35%), radial-gradient(circle at 85% 15%, rgba(120,160,255,.12), transparent 40%), linear-gradient(180deg, #08122a, var(--sky));
       overflow: hidden;
     }
-
-    .card::before {
-      content: '';
-      position: absolute;
-      top: -1px;
-      left: 0;
-      right: 0;
-      height: 1px;
-      background: linear-gradient(90deg, transparent 0%, rgba(240, 192, 64, 0.85) 50%, transparent 100%);
-    }
-
-    h1 {
-      margin: 0 0 10px;
-      font-size: clamp(1.15rem, 2.6vw, 1.6rem);
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--gold);
-    }
-
-    .eyebrow {
-      display: inline-block;
-      margin-bottom: 12px;
-      padding: 6px 12px;
-      border: 1px solid rgba(240, 192, 64, 0.25);
-      background: rgba(240, 192, 64, 0.08);
-      color: var(--gold-soft);
-      font-size: 0.66rem;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-    }
-
-    p {
-      margin: 0;
-      color: var(--muted);
-      font-family: 'Crimson Text', serif;
-      font-size: 1.12rem;
-      line-height: 1.55;
-    }
-
-    .actions {
-      margin-top: 22px;
-      display: flex;
-      gap: 10px;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-
-    .btn {
-      border: 1px solid rgba(240, 192, 64, 0.28);
-      background: rgba(240, 192, 64, 0.10);
-      color: var(--gold-soft);
-      text-decoration: none;
-      font-size: 0.72rem;
-      letter-spacing: 0.11em;
-      text-transform: uppercase;
-      padding: 10px 16px;
-      transition: border-color 0.2s, background 0.2s, color 0.2s;
-    }
-
-    .btn:hover {
-      border-color: rgba(240, 192, 64, 0.7);
-      background: rgba(240, 192, 64, 0.18);
-      color: #fff3cf;
-    }
-
-    .ok-text {
-      font-size: clamp(1.3rem, 3vw, 1.8rem);
-      color: var(--gold-soft);
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-    }
-
+    .cloud-layer { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+    .cloud { position: absolute; border-radius: 50%; filter: blur(38px); opacity: .12; animation: drift linear infinite; }
+    .cloud:nth-child(1){ width:420px;height:140px;top:8%;left:-28%;background:rgba(170,204,255,.35);animation-duration:80s; }
+    .cloud:nth-child(2){ width:520px;height:170px;top:42%;left:-34%;background:rgba(255,255,255,.2);animation-duration:115s;animation-delay:-22s; }
+    .cloud:nth-child(3){ width:380px;height:120px;top:72%;left:-24%;background:rgba(240,192,64,.18);animation-duration:95s;animation-delay:-45s; }
+    .scene { position: relative; z-index: 1; min-height: 100vh; display: grid; place-items: center; padding: 24px; }
+    .panel { position: relative; width: min(860px,100%); border: 1px solid var(--line); background: linear-gradient(140deg, rgba(240,192,64,.1), transparent 30%), var(--card); box-shadow: 0 18px 60px rgba(0,0,0,.45); padding: 56px 42px; text-align: center; overflow: hidden; animation: rise .7s ease both; }
+    .island { position: absolute; pointer-events: none; opacity: .9; }
+    .island-1 { bottom: 10%; left: 3%; animation: floatA 7s ease-in-out infinite; }
+    .island-2 { top: 12%; right: 4%; animation: floatB 9s ease-in-out infinite; }
+    .island-3 { bottom: 18%; right: 34%; animation: floatA 10s ease-in-out infinite 1.5s; }
+    .island svg { filter: drop-shadow(0 12px 40px rgba(0,0,0,.6)); }
+    .eyebrow { font-family: 'Cinzel', serif; font-size: .66rem; letter-spacing: .25em; color: var(--gold); text-transform: uppercase; margin-bottom: 14px; }
+    .title { font-family: 'Cinzel Decorative', serif; font-size: clamp(2rem, 8vw, 4.1rem); line-height: 1.05; margin-bottom: 12px; color: var(--gold); text-transform: uppercase; user-select: none; }
+    .title span { display: inline-block; transition: transform .28s ease; }
+    .title:hover span { transform: translateY(-8px); transition-delay: calc(var(--i) * 35ms); }
+    .sub { font-family: 'Cinzel', serif; font-size: clamp(.8rem,2.2vw,1.02rem); letter-spacing: .14em; text-transform: uppercase; color: var(--dim); }
     #ok { display: none; }
     #ko { display: none; }
+    @keyframes rise { from { opacity:0; transform: translateY(16px);} to { opacity:1; transform: translateY(0);} }
+    @keyframes drift { from { transform: translateX(0);} to { transform: translateX(calc(100vw + 900px));} }
+    @keyframes floatA { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-16px)} }
+    @keyframes floatB { 0%,100%{transform:translateY(0)} 50%{transform:translateY(12px)} }
+    @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } .title:hover span { transform: none; } }
+    @media (max-width: 800px) { .panel { padding: 32px 20px; } .island { display: none; } }
   </style>
 </head>
 <body>
-  <div class="card" id="ko">
-    <div class="eyebrow">Bloc-Coin Vote</div>
-    <h1>Vote</h1>
-    <p>Merci de vous connecter pour acceder a cette page</p>
-    <div class="actions">
-      <a class="btn" href="index.html">Retour a l'accueil</a>
-    </div>
-  </div>
+  <div class="cloud-layer" aria-hidden="true"><div class="cloud"></div><div class="cloud"></div><div class="cloud"></div></div>
+  <main class="scene">
+    <section class="panel" id="ko">
+      <div class="island island-1" aria-hidden="true"><svg width="120" height="60" viewBox="0 0 120 60"><ellipse cx="60" cy="52" rx="55" ry="9" fill="#1a1208" opacity="0.6"/><rect x="20" y="22" width="80" height="32" rx="3" fill="#2d1f10"/><rect x="20" y="18" width="80" height="6" rx="2" fill="#3d8c3a"/></svg></div>
+      <div class="island island-2" aria-hidden="true"><svg width="80" height="48" viewBox="0 0 80 48"><ellipse cx="40" cy="42" rx="36" ry="7" fill="#1a1208" opacity="0.5"/><rect x="10" y="18" width="60" height="26" rx="3" fill="#2d1f10"/><rect x="10" y="14" width="60" height="6" rx="2" fill="#3d8c3a"/></svg></div>
+      <div class="island island-3" aria-hidden="true"><svg width="100" height="52" viewBox="0 0 100 52"><ellipse cx="50" cy="44" rx="43" ry="7" fill="#1a1208" opacity="0.6"/><rect x="14" y="20" width="72" height="24" rx="3" fill="#2d1f10"/><rect x="14" y="16" width="72" height="6" rx="2" fill="#3d8c3a"/></svg></div>
+      <div class="eyebrow">Bloc-Coin</div>
+      <h1 class="title" id="title-ko">Vote</h1>
+      <div class="sub">Merci de vous connecter pour acceder a cette page</div>
+    </section>
 
-  <div class="card" id="ok">
-    <div class="eyebrow">Bloc-Coin Vote</div>
-    <h1>Vote</h1>
-    <p class="ok-text">salut</p>
-  </div>
+    <section class="panel" id="ok">
+      <div class="island island-1" aria-hidden="true"><svg width="120" height="60" viewBox="0 0 120 60"><ellipse cx="60" cy="52" rx="55" ry="9" fill="#1a1208" opacity="0.6"/><rect x="20" y="22" width="80" height="32" rx="3" fill="#2d1f10"/><rect x="20" y="18" width="80" height="6" rx="2" fill="#3d8c3a"/></svg></div>
+      <div class="island island-2" aria-hidden="true"><svg width="80" height="48" viewBox="0 0 80 48"><ellipse cx="40" cy="42" rx="36" ry="7" fill="#1a1208" opacity="0.5"/><rect x="10" y="18" width="60" height="26" rx="3" fill="#2d1f10"/><rect x="10" y="14" width="60" height="6" rx="2" fill="#3d8c3a"/></svg></div>
+      <div class="island island-3" aria-hidden="true"><svg width="100" height="52" viewBox="0 0 100 52"><ellipse cx="50" cy="44" rx="43" ry="7" fill="#1a1208" opacity="0.6"/><rect x="14" y="20" width="72" height="24" rx="3" fill="#2d1f10"/><rect x="14" y="16" width="72" height="6" rx="2" fill="#3d8c3a"/></svg></div>
+      <div class="eyebrow">Bloc-Coin</div>
+      <h1 class="title" id="title-ok">Vote</h1>
+      <div class="sub">salut</div>
+    </section>
+  </main>
 
   <script>
     const SUPABASE_URL = 'https://cimyrkybpnssyeyobyrh.supabase.co';
@@ -165,6 +97,23 @@
       ok.style.display = connecte ? 'block' : 'none';
       ko.style.display = connecte ? 'none' : 'block';
     }
+
+    function animerTitre(id) {
+      const t = document.getElementById(id);
+      if (!t || t.dataset.ready === '1') return;
+      const chars = t.textContent.split('');
+      t.textContent = '';
+      chars.forEach((c, i) => {
+        const s = document.createElement('span');
+        s.textContent = c === ' ' ? '\u00A0' : c;
+        s.style.setProperty('--i', i.toString());
+        t.appendChild(s);
+      });
+      t.dataset.ready = '1';
+    }
+
+    animerTitre('title-ko');
+    animerTitre('title-ok');
 
     client.auth.onAuthStateChange(() => {
       afficherSelonConnexion();
