@@ -55,13 +55,40 @@
       font-size: .98rem;
       margin-bottom: 12px;
     }
+    .vote-status-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
     .vote-status {
       font-family: 'Cinzel', serif;
       font-size: .64rem;
       letter-spacing: .08em;
       text-transform: uppercase;
       color: #8fb7ff;
-      margin-bottom: 10px;
+      margin-bottom: 0;
+      flex: 1;
+    }
+    .admin-skip {
+      display: none;
+      font-family: 'Cinzel', serif;
+      font-size: .58rem;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--gold-light);
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(240,192,64,.35);
+      padding: 5px 8px;
+      cursor: pointer;
+    }
+    .admin-skip:hover {
+      background: rgba(240,192,64,.12);
+    }
+    .admin-debug .admin-skip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
     .vote-btn {
       width: 100%;
@@ -137,14 +164,20 @@
         <article class="vote-card">
           <div class="vote-card-title">Vote Rapide (1h)</div>
           <div class="vote-card-sub">Disponible une fois toutes les 1 heure.</div>
-          <div class="vote-status" id="status-1h">Verification...</div>
+          <div class="vote-status-row">
+            <div class="vote-status" id="status-1h">Verification...</div>
+            <button type="button" class="admin-skip" id="skip-1h">Skip</button>
+          </div>
           <button type="button" class="vote-btn" id="btn-vote-1h">Voter maintenant</button>
         </article>
 
         <article class="vote-card">
           <div class="vote-card-title">Vote Bonus (3h)</div>
           <div class="vote-card-sub">Disponible une fois toutes les 3 heures.</div>
-          <div class="vote-status" id="status-3h">Verification...</div>
+          <div class="vote-status-row">
+            <div class="vote-status" id="status-3h">Verification...</div>
+            <button type="button" class="admin-skip" id="skip-3h">Skip</button>
+          </div>
           <button type="button" class="vote-btn" id="btn-vote-3h">Voter maintenant</button>
         </article>
       </div>
@@ -166,6 +199,7 @@
     const VOTE_URL_3H = 'https://www.sites.google.com/view/bloccoin';
     const COOLDOWN_1H_MS = 60 * 60 * 1000;
     const COOLDOWN_3H_MS = 3 * 60 * 60 * 1000;
+    const ADMIN_EMAIL = 'ingaruriksonic@gmail.com';
 
     const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
       auth: {
@@ -180,6 +214,18 @@
 
     let utilisateurCourant = null;
     let timerVotes = null;
+
+    function estAdminConnecte() {
+      return (utilisateurCourant?.email || '').trim().toLowerCase() === ADMIN_EMAIL;
+    }
+
+    function majUiAdmin() {
+      if (estAdminConnecte()) {
+        document.body.classList.add('admin-debug');
+      } else {
+        document.body.classList.remove('admin-debug');
+      }
+    }
 
     function formatDuration(ms) {
       const totalSec = Math.max(0, Math.ceil(ms / 1000));
@@ -267,6 +313,19 @@
       majUiVotes();
     }
 
+    function skipCooldownVote(type) {
+      if (!estAdminConnecte()) return;
+
+      const etat = lireEtatVote();
+      if (type === '1h') {
+        etat.next1h = 0;
+      } else {
+        etat.next3h = 0;
+      }
+      ecrireEtatVote(etat);
+      majUiVotes();
+    }
+
     async function afficherSelonConnexion() {
       const ok = document.getElementById('ok');
       const ko = document.getElementById('ko');
@@ -285,10 +344,12 @@
       ko.style.display = connecte ? 'none' : 'block';
 
       if (connecte) {
+        majUiAdmin();
         demarrerTimerVotes();
       } else if (timerVotes) {
         clearInterval(timerVotes);
         timerVotes = null;
+        majUiAdmin();
       }
     }
 
@@ -311,8 +372,12 @@
 
     const btn1h = document.getElementById('btn-vote-1h');
     const btn3h = document.getElementById('btn-vote-3h');
+    const skip1h = document.getElementById('skip-1h');
+    const skip3h = document.getElementById('skip-3h');
     if (btn1h) btn1h.addEventListener('click', () => traiterVote('1h'));
     if (btn3h) btn3h.addEventListener('click', () => traiterVote('3h'));
+    if (skip1h) skip1h.addEventListener('click', () => skipCooldownVote('1h'));
+    if (skip3h) skip3h.addEventListener('click', () => skipCooldownVote('3h'));
 
     client.auth.onAuthStateChange(() => {
       afficherSelonConnexion();

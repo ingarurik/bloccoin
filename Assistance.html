@@ -189,6 +189,32 @@
       margin-top: 8px;
       min-height: 18px;
     }
+    .cooldown-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .admin-skip {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Cinzel', serif;
+      font-size: .58rem;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--gold-light);
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(240,192,64,.35);
+      padding: 6px 9px;
+      cursor: pointer;
+    }
+    .admin-skip:hover {
+      background: rgba(240,192,64,.12);
+    }
+    .admin-debug .admin-skip {
+      display: inline-flex;
+    }
     .form-footer {
       margin-top: 10px;
       display: flex;
@@ -380,7 +406,10 @@
           <button class="cta" id="support-submit" type="submit">Envoyer la demande</button>
           <span id="form-feedback" class="form-feedback" aria-live="polite"></span>
         </div>
-        <p id="cooldown-text" class="cooldown-note" aria-live="polite"></p>
+        <div class="cooldown-row">
+          <p id="cooldown-text" class="cooldown-note" aria-live="polite"></p>
+          <button type="button" class="admin-skip" id="skip-support">Skip</button>
+        </div>
       </form>
       <p class="help-note">Formulaire actif: envoi direct vers l'assistance Bloc-Coin avec un e-mail HTML dans le theme du site.</p>
       <p class="help-note">Adresse de reception configuree: ingaruriksonic@gmail.com</p>
@@ -410,12 +439,39 @@
     const SUPPORT_ENDPOINT = "/api/support";
     const SUPPORT_COOLDOWN_MS = 60 * 60 * 1000;
     const SUPPORT_COOLDOWN_KEY = "bloccoin_support_cooldown_until";
+    const SUPABASE_AUTH_STORAGE_KEY = "sb-cimyrkybpnssyeyobyrh-auth-token";
+    const ADMIN_EMAIL = "ingaruriksonic@gmail.com";
 
     const supportForm = document.getElementById("support-form");
     const submitBtn = document.getElementById("support-submit");
     const feedback = document.getElementById("form-feedback");
     const cooldownText = document.getElementById("cooldown-text");
+    const skipSupportBtn = document.getElementById("skip-support");
     let isSubmitting = false;
+
+    function emailSessionCourante() {
+      try {
+        const raw = localStorage.getItem(SUPABASE_AUTH_STORAGE_KEY) || sessionStorage.getItem(SUPABASE_AUTH_STORAGE_KEY);
+        if (!raw) return "";
+        const parsed = JSON.parse(raw);
+        const session = parsed?.currentSession || parsed?.session || parsed;
+        return (session?.user?.email || "").trim().toLowerCase();
+      } catch (_) {
+        return "";
+      }
+    }
+
+    function estAdminConnecte() {
+      return emailSessionCourante() === ADMIN_EMAIL;
+    }
+
+    function majUiAdmin() {
+      if (estAdminConnecte()) {
+        document.body.classList.add("admin-debug");
+      } else {
+        document.body.classList.remove("admin-debug");
+      }
+    }
 
     function formatRemaining(ms) {
       const totalSec = Math.max(0, Math.floor(ms / 1000));
@@ -454,8 +510,17 @@
       }
     }
 
+    function skipSupportCooldown() {
+      if (!estAdminConnecte()) return;
+      localStorage.removeItem(SUPPORT_COOLDOWN_KEY);
+      setFeedback("Cooldown retire pour le compte admin.", "ok");
+      updateCooldownUI();
+    }
+
+    majUiAdmin();
     setInterval(updateCooldownUI, 1000);
     updateCooldownUI();
+    if (skipSupportBtn) skipSupportBtn.addEventListener("click", skipSupportCooldown);
 
     function setFeedback(message, type) {
       feedback.textContent = message;
