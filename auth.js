@@ -733,17 +733,8 @@ function basculerOnglet(onglet) {
 }
 
 async function soumettreConnexion(e) {
-  e.preventDefault();
-  const email = document.getElementById('cx-email').value.trim();
-  const mdp = document.getElementById('cx-mdp').value;
-
-  setChargement('form-connexion', true);
-  viderErreurs();
-
-  const { error } = await _supabase.auth.signInWithPassword({ email, password: mdp });
-
-  setChargement('form-connexion', false);
-  if (error) afficherErreur('err-connexion', traduireErreur(error.message));
+  if (e) e.preventDefault();
+  afficherErreur('err-connexion', 'Connexion disponible uniquement avec Google.');
 }
 
 async function soumettreInscription(e) {

@@ -972,19 +972,7 @@
     <div class="auth-corps">
       <div data-panneau="connexion" class="actif">
         <button type="button" class="btn-google" data-google-auth>Continuer avec Google</button>
-        <div class="separateur">ou par email</div>
-        <form id="form-connexion" novalidate>
-          <div class="champ-groupe">
-            <label for="cx-email">Adresse email</label>
-            <input id="cx-email" type="email" placeholder="toi@exemple.fr" required autocomplete="email" />
-          </div>
-          <div class="champ-groupe">
-            <label for="cx-mdp">Mot de passe</label>
-            <input id="cx-mdp" type="password" placeholder="********" required autocomplete="current-password" />
-          </div>
-          <button type="submit" class="btn-soumettre" data-label="Se connecter">Se connecter</button>
-          <div id="err-connexion" role="alert"></div>
-        </form>
+        <div id="err-connexion" role="alert" style="display:block; margin-top:10px;">Connexion disponible uniquement avec Google pour le moment.</div>
       </div>
 
       <div data-panneau="inscription">
