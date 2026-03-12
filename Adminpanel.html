@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bloc-Coin | Adminpanel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --gold:#f0c040;
+      --gold-light:#ffe87a;
+      --sky:#060e1f;
+      --text:#e8dcc8;
+      --dim:#9a8a72;
+      --line:rgba(240,192,64,.2);
+      --card:rgba(10,18,35,.9);
+      --ok:#9de7aa;
+      --err:#ffb3b3;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { min-height: 100%; }
+    body {
+      font-family: 'Crimson Text', Georgia, serif;
+      color: var(--text);
+      background: radial-gradient(circle at 15% 10%, rgba(240,192,64,.08), transparent 35%), radial-gradient(circle at 85% 15%, rgba(120,160,255,.12), transparent 40%), linear-gradient(180deg, #08122a, var(--sky));
+      overflow-x: hidden;
+    }
+    .cloud-layer { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+    .cloud { position: absolute; border-radius: 50%; filter: blur(38px); opacity: .12; animation: drift linear infinite; }
+    .cloud:nth-child(1){ width:420px;height:140px;top:8%;left:-28%;background:rgba(170,204,255,.35);animation-duration:80s; }
+    .cloud:nth-child(2){ width:520px;height:170px;top:42%;left:-34%;background:rgba(255,255,255,.2);animation-duration:115s;animation-delay:-22s; }
+    .cloud:nth-child(3){ width:380px;height:120px;top:72%;left:-24%;background:rgba(240,192,64,.18);animation-duration:95s;animation-delay:-45s; }
+    .wrap { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 56px 20px 90px; }
+    .hero, .panel {
+      border: 1px solid var(--line);
+      background: linear-gradient(140deg, rgba(240,192,64,.08), transparent 30%), var(--card);
+      box-shadow: 0 18px 60px rgba(0,0,0,.45);
+      padding: 28px;
+    }
+    .panel { margin-top: 14px; }
+    .eyebrow { font-family: 'Cinzel', serif; font-size: .66rem; letter-spacing: .25em; color: var(--gold); text-transform: uppercase; margin-bottom: 14px; }
+    h1 { font-family: 'Cinzel Decorative', serif; font-size: clamp(1.9rem, 6vw, 3.6rem); line-height: 1.08; margin-bottom: 12px; color: var(--gold); }
+    .lead, .muted { color: var(--dim); line-height: 1.72; }
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Cinzel', serif;
+      font-size: 0.74rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--sky);
+      background: linear-gradient(135deg, var(--gold-light), var(--gold));
+      border: none;
+      padding: 10px 20px;
+      text-decoration: none;
+      cursor: pointer;
+      clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+      font-weight: 700;
+    }
+    .btn.secondary {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid rgba(232,220,200,0.3);
+    }
+    .btn.secondary:hover { border-color: var(--gold); color: var(--gold); }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 14px; }
+    .card {
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(8,16,30,0.8);
+      padding: 14px;
+    }
+    .card-title {
+      font-family: 'Cinzel', serif;
+      color: var(--gold-light);
+      font-size: .72rem;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .state { display: none; }
+    .state.active { display: block; }
+    .status-box {
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(8,16,30,0.8);
+      padding: 12px;
+      margin-top: 12px;
+    }
+    .status-label {
+      display: block;
+      font-family: 'Cinzel', serif;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      font-size: .58rem;
+      color: var(--dim);
+      margin-bottom: 4px;
+    }
+    .status-value {
+      display: block;
+      color: var(--text);
+      font-size: 1rem;
+      word-break: break-word;
+    }
+    .notice-ok { color: var(--ok); }
+    .notice-err { color: var(--err); }
+    @keyframes drift { from { transform: translateX(0);} to { transform: translateX(calc(100vw + 900px));} }
+    @media (max-width: 860px) {
+      .wrap { padding: 40px 14px 70px; }
+      .hero, .panel { padding: 20px; }
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="cloud-layer" aria-hidden="true">
+    <div class="cloud"></div>
+    <div class="cloud"></div>
+    <div class="cloud"></div>
+  </div>
+
+  <main class="wrap">
+    <section class="hero">
+      <div class="eyebrow">Bloc-Coin</div>
+      <h1>Adminpanel</h1>
+      <p class="lead">Page reservee au compte administrateur. Meme avec l'URL directe, l'acces reste bloque tant que le bon compte n'est pas connecte.</p>
+      <div class="actions">
+        <a class="btn secondary" href="index.html">Retour index</a>
+      </div>
+    </section>
+
+    <section class="panel state active" id="state-loading">
+      <div class="card-title">Verification</div>
+      <p class="muted">Verification de la session en cours...</p>
+    </section>
+
+    <section class="panel state" id="state-login">
+      <div class="card-title">Connexion requise</div>
+      <p class="muted">Connecte-toi avec le compte administrateur pour acceder au panneau. Si tu ouvres cette page depuis l'overlay, la connexion sera redirigee vers la page complete.</p>
+      <div class="actions">
+        <button class="btn" id="btn-login-google" type="button">Connexion Google admin</button>
+      </div>
+    </section>
+
+    <section class="panel state" id="state-forbidden">
+      <div class="card-title">Acces refuse</div>
+      <p class="muted">Cette page est reservee a l'adresse admin configuree. Le compte connecte actuel n'est pas autorise.</p>
+      <div class="status-box">
+        <span class="status-label">Compte connecte</span>
+        <span class="status-value" id="forbidden-email">-</span>
+      </div>
+      <div class="actions">
+        <button class="btn secondary" id="btn-logout" type="button">Se deconnecter</button>
+      </div>
+    </section>
+
+    <section class="panel state" id="state-admin">
+      <div class="card-title notice-ok">Acces admin autorise</div>
+      <p class="muted">Tu es connecte avec le compte admin. Cette page peut servir de hub prive pour tes futurs outils et tests.</p>
+      <div class="grid">
+        <article class="card">
+          <div class="card-title">Compte</div>
+          <p class="muted" id="admin-email">-</p>
+        </article>
+        <article class="card">
+          <div class="card-title">Etat</div>
+          <p class="muted">Session admin verifiee et page protegee.</p>
+        </article>
+        <article class="card">
+          <div class="card-title">Acces rapide</div>
+          <p class="muted">Raccourcis vers les pages de test et de moderation.</p>
+        </article>
+      </div>
+      <div class="actions">
+        <a class="btn" href="Vote.html">Vote</a>
+        <a class="btn" href="Assistance.html">Assistance</a>
+        <a class="btn secondary" href="Discord.html">Discord</a>
+        <button class="btn secondary" id="btn-logout-admin" type="button">Se deconnecter</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const SUPABASE_URL = 'https://cimyrkybpnssyeyobyrh.supabase.co';
+    const SUPABASE_ANON = 'sb_publishable_XAfHoy6vcPskEW1vNJaAkA_92iGeE-v';
+    const ADMIN_EMAIL = 'ingaruriksonic@gmail.com';
+    const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
+      auth: {
+        flowType: 'pkce',
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        multiTab: false,
+        storageKey: 'sb-cimyrkybpnssyeyobyrh-auth-token'
+      }
+    });
+
+    function showState(id) {
+      document.querySelectorAll('.state').forEach((node) => node.classList.remove('active'));
+      const target = document.getElementById(id);
+      if (target) target.classList.add('active');
+    }
+
+    function isAdminEmail(email) {
+      return (email || '').trim().toLowerCase() === ADMIN_EMAIL;
+    }
+
+    async function logoutAndRefresh() {
+      try {
+        await client.auth.signOut({ scope: 'local' });
+      } catch (_) {
+        // Ignore local signout failures.
+      }
+      window.location.href = 'Adminpanel.html';
+    }
+
+    async function loginGoogle() {
+      if (window.top !== window.self) {
+        window.top.location.href = window.location.origin + '/Adminpanel.html';
+        return;
+      }
+
+      await client.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin + '/Adminpanel.html'
+        }
+      });
+    }
+
+    async function renderAccessState() {
+      showState('state-loading');
+      let session = null;
+      try {
+        const result = await client.auth.getSession();
+        session = result.data.session;
+      } catch (_) {
+        session = null;
+      }
+
+      const user = session?.user || null;
+      const email = user?.email || '';
+
+      if (!user) {
+        showState('state-login');
+        return;
+      }
+
+      if (!isAdminEmail(email)) {
+        document.getElementById('forbidden-email').textContent = email || 'Compte inconnu';
+        showState('state-forbidden');
+        return;
+      }
+
+      document.getElementById('admin-email').textContent = email;
+      showState('state-admin');
+    }
+
+    document.getElementById('btn-login-google').addEventListener('click', loginGoogle);
+    document.getElementById('btn-logout').addEventListener('click', logoutAndRefresh);
+    document.getElementById('btn-logout-admin').addEventListener('click', logoutAndRefresh);
+
+    client.auth.onAuthStateChange(() => {
+      renderAccessState();
+    });
+
+    renderAccessState();
+  </script>
+</body>
+</html>

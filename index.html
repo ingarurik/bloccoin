@@ -670,6 +670,21 @@
     .sb-btn:hover { background: rgba(240,192,64,.09); color: #f0c040; border-color: rgba(240,192,64,.2); border-radius: 13px; }
     .sb-btn.active { background: rgba(240,192,64,.14); color: #f0c040; border-color: rgba(240,192,64,.32); border-radius: 14px; }
     .sb-btn.active::before { content: ''; position: absolute; left: -9px; top: 50%; transform: translateY(-50%); width: 4px; height: 24px; background: #f0c040; border-radius: 0 3px 3px 0; }
+    .sb-btn-admin,
+    .sb-sep-admin {
+      display: none;
+    }
+    body.auth-admin .sb-btn-admin,
+    body.auth-admin .sb-sep-admin {
+      display: flex;
+    }
+    body.auth-admin .sb-sep-admin {
+      width: 36px;
+      height: 1px;
+      background: rgba(240,192,64,.14);
+      margin: 5px 0;
+      flex-shrink: 0;
+    }
     .sb-btn::after {
       content: attr(data-tip);
       position: absolute; left: 58px; top: 50%; transform: translateY(-50%);
@@ -749,6 +764,8 @@
   <button class="sb-btn" data-tip="Accueil" onclick="openCat('accueil',this)">🏠</button>
   <button class="sb-btn" data-tip="Serveur" onclick="openCat('serveur',this)">⚙️</button>
   <div class="sb-sep"></div>
+  <button class="sb-btn sb-btn-admin" id="sb-admin-btn" data-tip="Adminpanel" onclick="openCat('admin',this)">👑</button>
+  <div class="sb-sep-admin"></div>
   <button class="sb-btn" data-tip="Aide & FAQ" onclick="openCat('aide',this)">❓</button>
 </div>
 
@@ -1100,7 +1117,9 @@
       {ico:'💬',lbl:'Discord',file:'Discord.html'},
       {ico:'🎟️',lbl:'Stickers',file:'Stickers.html',badge:'A Venir'},
     ]},
-    /* 'secret' category removed */
+    admin: { ico:'👑', ttl:'Adminpanel', pages:[
+      {ico:'👑',lbl:'Adminpanel',file:'Adminpanel.html'},
+    ]},
     aide: { ico:'❓', ttl:'Aide & FAQ', pages:[
       {ico:'🆘',lbl:'Assistance',file:'Assistance.html'},
       {ico:'🤝',lbl:'Communauté',file:'Communauté.html'},
@@ -1133,6 +1152,7 @@
 
   function openCat(id, btn) {
     if (!railOpen) return;
+    if (id === 'admin' && !document.body.classList.contains('auth-admin')) return;
     const panel = document.getElementById('sbPanel');
     if (activeCat === id) { closePanel(); return; }
     activeCat = id;
@@ -1226,8 +1246,6 @@
   });
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="auth.js?v=20260311-30"></script>
+<script src="auth.js?v=20260312-31"></script>
 </body>
 </html>
-
-/*je veut un systeme de vote ou les joueur peuvent voter toute les 1h, et toute les 3h, pour recevoir des recompense en jeu, je veut un systeme qui verifie que les joueur sois pas des robot, avec un captcha et tout, et aussi je veut que sa enpeche au joueur de voter plusieur fois avant les 1 ou 3 heure, par exmeple en recuperent son ip ou quoi tu sais comme sa il ne peut pas actualiser la page*/

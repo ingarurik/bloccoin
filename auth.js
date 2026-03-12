@@ -5,6 +5,7 @@ const SUPABASE_ANON = 'sb_publishable_XAfHoy6vcPskEW1vNJaAkA_92iGeE-v';
 const SUPABASE_AUTH_STORAGE_KEY = 'sb-cimyrkybpnssyeyobyrh-auth-token';
 const SUPABASE_AUTH_LOCK_KEY = `lock:${SUPABASE_AUTH_STORAGE_KEY}`;
 const COMPTE_UPDATE_TIMEOUT_MS = 25000;
+const ADMIN_EMAIL = 'ingaruriksonic@gmail.com';
 
 async function verrouAuthLocal(_name, _acquireTimeout, execute) {
   return execute();
@@ -46,8 +47,25 @@ let profilUtilisateur = null;
 let authStateProcessing = false;
 let sessionCheckPromise = null;
 let fileAuthQueue = Promise.resolve();
-window.__AUTH_BUILD__ = '20260311-30';
+window.__AUTH_BUILD__ = '20260312-31';
 window.AUTH_BUILD = window.__AUTH_BUILD__;
+
+function estEmailAdmin(email) {
+  return (email || '').trim().toLowerCase() === ADMIN_EMAIL;
+}
+
+function definirEtatAdminUi(email) {
+  const adminActif = estEmailAdmin(email);
+  document.body.classList.toggle('auth-admin', adminActif);
+  window.__bloccoinIsAdmin = adminActif;
+  window.__bloccoinAdminEmail = (email || '').trim().toLowerCase();
+  window.dispatchEvent(new CustomEvent('bloccoin-admin-change', {
+    detail: {
+      isAdmin: adminActif,
+      email: window.__bloccoinAdminEmail
+    }
+  }));
+}
 
 function executerAuthEnSerie(tache) {
   fileAuthQueue = fileAuthQueue.then(tache, tache);
@@ -344,13 +362,19 @@ async function verifierSession() {
     const { data: { user } } = await getUserFiable();
 
     if (sessionValide(session) && user?.id) {
-      afficherPseudo(formatterAffichageEmail(user.email || session.user?.email || pseudoAffichageDepuisUtilisateur(user)));
+      afficherPseudo(
+        formatterAffichageEmail(user.email || session.user?.email || pseudoAffichageDepuisUtilisateur(user)),
+        user.email || session.user?.email || ''
+      );
       await chargerProfilEtAfficher(user);
       return;
     }
 
     if (user) {
-      afficherPseudo(formatterAffichageEmail(user.email || pseudoAffichageDepuisUtilisateur(user)));
+      afficherPseudo(
+        formatterAffichageEmail(user.email || pseudoAffichageDepuisUtilisateur(user)),
+        user.email || ''
+      );
       await chargerProfilEtAfficher(user);
       return;
     }
@@ -441,7 +465,10 @@ async function chargerProfilEtAfficher(userOrId) {
   }
 
   if (userObj) {
-    afficherPseudo(formatterAffichageEmail(userObj.email || pseudoAffichageDepuisUtilisateur(userObj)));
+    afficherPseudo(
+      formatterAffichageEmail(userObj.email || pseudoAffichageDepuisUtilisateur(userObj)),
+      userObj.email || ''
+    );
   }
 
   const { data: profil, error } = await _supabase
@@ -453,7 +480,10 @@ async function chargerProfilEtAfficher(userOrId) {
   // New OAuth users can exist in auth.users without a row in profils.
   if (error && error.code !== 'PGRST116') {
     if (userObj) {
-      afficherPseudo(formatterAffichageEmail(userObj.email || pseudoAffichageDepuisUtilisateur(userObj)));
+      afficherPseudo(
+        formatterAffichageEmail(userObj.email || pseudoAffichageDepuisUtilisateur(userObj)),
+        userObj.email || ''
+      );
       return;
     }
     afficherBoutonConnexion();
@@ -467,7 +497,10 @@ async function chargerProfilEtAfficher(userOrId) {
 
   if (!profilFinal) {
     if (userObj) {
-      afficherPseudo(formatterAffichageEmail(userObj.email || pseudoAffichageDepuisUtilisateur(userObj)));
+      afficherPseudo(
+        formatterAffichageEmail(userObj.email || pseudoAffichageDepuisUtilisateur(userObj)),
+        userObj.email || ''
+      );
       return;
     }
     afficherBoutonConnexion();
@@ -476,7 +509,7 @@ async function chargerProfilEtAfficher(userOrId) {
 
   profilUtilisateur = profilFinal;
   const emailUtilisateur = userObj?.email || profilFinal.email || '';
-  afficherPseudo(formatterAffichageEmail(emailUtilisateur || profilFinal.pseudo_site));
+  afficherPseudo(formatterAffichageEmail(emailUtilisateur || profilFinal.pseudo_site), emailUtilisateur);
 }
 
 function pseudoAffichageDepuisUtilisateur(user) {
@@ -554,6 +587,7 @@ function afficherBoutonConnexion() {
   }
   if (zone) zone.style.display = 'none';
   definirEtatConnexionUi(false);
+  definirEtatAdminUi('');
   fermerFenetreCompte();
 }
 
@@ -638,7 +672,7 @@ async function chargerDonneesCompte() {
   afficherEditionCompteDesactivee();
 }
 
-function afficherPseudo(valeurAffichee) {
+function afficherPseudo(valeurAffichee, emailUtilisateur = '') {
   const btn = document.getElementById('btn-connexion');
   const btnCompte = document.getElementById('btn-compte');
   const zone = document.getElementById('zone-compte');
@@ -653,6 +687,7 @@ function afficherPseudo(valeurAffichee) {
   if (zone) zone.style.display = 'none';
   if (nomAffiche) nomAffiche.textContent = valeurAffichee;
   definirEtatConnexionUi(true);
+  definirEtatAdminUi(emailUtilisateur);
 }
 
 function initialiserModal() {
@@ -867,7 +902,7 @@ async function soumettreCompte(e) {
     if (errProfil) throw errProfil;
 
     profilUtilisateur = profilSauve || profilMaj;
-    afficherPseudo(pseudo_site);
+    afficherPseudo(pseudo_site, email);
     remplirFormulaireCompte(profilUtilisateur, { ...user, email });
 
     if (email !== (user.email || '')) {
