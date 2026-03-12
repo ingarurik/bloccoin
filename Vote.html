@@ -35,6 +35,83 @@
     .title span { display: inline-block; transition: transform .28s ease; }
     .title:hover span { transform: translateY(-8px); transition-delay: calc(var(--i) * 35ms); }
     .sub { font-family: 'Cinzel', serif; font-size: clamp(.8rem,2.2vw,1.02rem); letter-spacing: .14em; text-transform: uppercase; color: var(--dim); }
+    .vote-grid {
+      margin-top: 24px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .vote-card {
+      border: 1px solid rgba(240,192,64,.18);
+      background: rgba(255,255,255,.03);
+      padding: 14px;
+      text-align: left;
+    }
+    .vote-card-title {
+      font-family: 'Cinzel', serif;
+      font-size: .72rem;
+      letter-spacing: .11em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 8px;
+    }
+    .vote-card-sub {
+      color: #b9c5d9;
+      font-size: .98rem;
+      margin-bottom: 12px;
+    }
+    .vote-status {
+      font-family: 'Cinzel', serif;
+      font-size: .64rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: #8fb7ff;
+      margin-bottom: 10px;
+    }
+    .vote-btn {
+      width: 100%;
+      border: 1px solid rgba(240,192,64,.35);
+      background: linear-gradient(135deg, rgba(240,192,64,.25), rgba(240,192,64,.1));
+      color: #ffe7b8;
+      font-family: 'Cinzel', serif;
+      font-size: .7rem;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      padding: 10px 12px;
+      cursor: pointer;
+      transition: border-color .2s, background .2s, opacity .2s;
+    }
+    .vote-btn:hover {
+      border-color: rgba(240,192,64,.7);
+      background: linear-gradient(135deg, rgba(240,192,64,.35), rgba(240,192,64,.16));
+    }
+    .vote-btn:disabled {
+      opacity: .55;
+      cursor: not-allowed;
+    }
+    .vote-info {
+      margin-top: 18px;
+      border: 1px solid rgba(240,192,64,.16);
+      background: rgba(255,255,255,.03);
+      padding: 12px;
+      color: #b8c4da;
+      text-align: left;
+      font-size: .98rem;
+      line-height: 1.55;
+    }
+    .vote-info strong {
+      color: #ffe1a2;
+      font-family: 'Cinzel', serif;
+      font-size: .68rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .vote-note {
+      margin-top: 12px;
+      color: #8fa0bd;
+      font-size: .86rem;
+      text-align: center;
+    }
     #ok { display: none; }
     #ko { display: none; }
     @keyframes rise { from { opacity:0; transform: translateY(16px);} to { opacity:1; transform: translateY(0);} }
@@ -63,13 +140,41 @@
       <div class="island island-3" aria-hidden="true"><svg width="100" height="52" viewBox="0 0 100 52"><ellipse cx="50" cy="44" rx="43" ry="7" fill="#1a1208" opacity="0.6"/><rect x="14" y="20" width="72" height="24" rx="3" fill="#2d1f10"/><rect x="14" y="16" width="72" height="6" rx="2" fill="#3d8c3a"/></svg></div>
       <div class="eyebrow">Bloc-Coin</div>
       <h1 class="title" id="title-ok">Vote</h1>
-      <div class="sub">salut</div>
+      <div class="sub">Gagne des recompenses en votant regulierement</div>
+
+      <div class="vote-grid">
+        <article class="vote-card">
+          <div class="vote-card-title">Vote Rapide (1h)</div>
+          <div class="vote-card-sub">Disponible une fois toutes les 1 heure.</div>
+          <div class="vote-status" id="status-1h">Verification...</div>
+          <button type="button" class="vote-btn" id="btn-vote-1h">Voter maintenant</button>
+        </article>
+
+        <article class="vote-card">
+          <div class="vote-card-title">Vote Bonus (3h)</div>
+          <div class="vote-card-sub">Disponible une fois toutes les 3 heures.</div>
+          <div class="vote-status" id="status-3h">Verification...</div>
+          <button type="button" class="vote-btn" id="btn-vote-3h">Voter maintenant</button>
+        </article>
+      </div>
+
+      <div class="vote-info">
+        <strong>Deroulement</strong><br />
+        - Chaque compte peut voter sur les deux boutons selon leurs delais propres.<br />
+        - Le delai est memorise pour ton compte, meme si tu actualises la page.<br />
+        - Les recompenses en jeu peuvent ensuite etre distribuees selon votre logique serveur.
+      </div>
+      <div class="vote-note">Pense a te reconnecter si ton statut change.</div>
     </section>
   </main>
 
   <script>
     const SUPABASE_URL = 'https://cimyrkybpnssyeyobyrh.supabase.co';
     const SUPABASE_ANON = 'sb_publishable_XAfHoy6vcPskEW1vNJaAkA_92iGeE-v';
+    const VOTE_URL_1H = 'https://top-serveurs.net/minecraft/vote/bloc-coin-1h';
+    const VOTE_URL_3H = 'https://top-serveurs.net/minecraft/vote/bloc-coin-3h';
+    const COOLDOWN_1H_MS = 60 * 60 * 1000;
+    const COOLDOWN_3H_MS = 3 * 60 * 60 * 1000;
 
     const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
       auth: {
@@ -82,6 +187,95 @@
       }
     });
 
+    let utilisateurCourant = null;
+    let timerVotes = null;
+
+    function formatDuration(ms) {
+      const totalSec = Math.max(0, Math.ceil(ms / 1000));
+      const h = Math.floor(totalSec / 3600);
+      const m = Math.floor((totalSec % 3600) / 60);
+      const s = totalSec % 60;
+      return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    }
+
+    function voteStorageKey() {
+      if (!utilisateurCourant?.id) return null;
+      return `bloccoin_vote_state_${utilisateurCourant.id}`;
+    }
+
+    function lireEtatVote() {
+      const key = voteStorageKey();
+      if (!key) return { next1h: 0, next3h: 0 };
+      try {
+        const raw = localStorage.getItem(key);
+        if (!raw) return { next1h: 0, next3h: 0 };
+        const parsed = JSON.parse(raw);
+        return {
+          next1h: Number(parsed.next1h) || 0,
+          next3h: Number(parsed.next3h) || 0
+        };
+      } catch (_) {
+        return { next1h: 0, next3h: 0 };
+      }
+    }
+
+    function ecrireEtatVote(etat) {
+      const key = voteStorageKey();
+      if (!key) return;
+      localStorage.setItem(key, JSON.stringify(etat));
+    }
+
+    function majUiVotes() {
+      const status1h = document.getElementById('status-1h');
+      const status3h = document.getElementById('status-3h');
+      const btn1h = document.getElementById('btn-vote-1h');
+      const btn3h = document.getElementById('btn-vote-3h');
+      if (!status1h || !status3h || !btn1h || !btn3h) return;
+
+      const etat = lireEtatVote();
+      const now = Date.now();
+
+      const reste1h = etat.next1h - now;
+      if (reste1h <= 0) {
+        status1h.textContent = 'Disponible maintenant';
+        btn1h.disabled = false;
+      } else {
+        status1h.textContent = `Prochain vote dans ${formatDuration(reste1h)}`;
+        btn1h.disabled = true;
+      }
+
+      const reste3h = etat.next3h - now;
+      if (reste3h <= 0) {
+        status3h.textContent = 'Disponible maintenant';
+        btn3h.disabled = false;
+      } else {
+        status3h.textContent = `Prochain vote dans ${formatDuration(reste3h)}`;
+        btn3h.disabled = true;
+      }
+    }
+
+    function demarrerTimerVotes() {
+      if (timerVotes) clearInterval(timerVotes);
+      majUiVotes();
+      timerVotes = setInterval(majUiVotes, 1000);
+    }
+
+    function traiterVote(type) {
+      if (!utilisateurCourant?.id) return;
+
+      const etat = lireEtatVote();
+      const now = Date.now();
+      if (type === '1h') {
+        etat.next1h = now + COOLDOWN_1H_MS;
+        if (VOTE_URL_1H) window.open(VOTE_URL_1H, '_blank', 'noopener,noreferrer');
+      } else {
+        etat.next3h = now + COOLDOWN_3H_MS;
+        if (VOTE_URL_3H) window.open(VOTE_URL_3H, '_blank', 'noopener,noreferrer');
+      }
+      ecrireEtatVote(etat);
+      majUiVotes();
+    }
+
     async function afficherSelonConnexion() {
       const ok = document.getElementById('ok');
       const ko = document.getElementById('ko');
@@ -90,12 +284,21 @@
       try {
         const { data: { session } } = await client.auth.getSession();
         connecte = !!(session && session.user);
+        utilisateurCourant = session?.user || null;
       } catch (_) {
         connecte = false;
+        utilisateurCourant = null;
       }
 
       ok.style.display = connecte ? 'block' : 'none';
       ko.style.display = connecte ? 'none' : 'block';
+
+      if (connecte) {
+        demarrerTimerVotes();
+      } else if (timerVotes) {
+        clearInterval(timerVotes);
+        timerVotes = null;
+      }
     }
 
     function animerTitre(id) {
@@ -114,6 +317,11 @@
 
     animerTitre('title-ko');
     animerTitre('title-ok');
+
+    const btn1h = document.getElementById('btn-vote-1h');
+    const btn3h = document.getElementById('btn-vote-3h');
+    if (btn1h) btn1h.addEventListener('click', () => traiterVote('1h'));
+    if (btn3h) btn3h.addEventListener('click', () => traiterVote('3h'));
 
     client.auth.onAuthStateChange(() => {
       afficherSelonConnexion();
