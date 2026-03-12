@@ -331,7 +331,7 @@
       <p class="guide">
         Remplis ce formulaire puis clique sur envoyer: tu recevras la demande par e-mail avec les questions et les reponses.
       </p>
-      <form id="support-form" class="support-form" method="POST" action="https://formspree.io/f/mpqyrazk" novalidate>
+      <form id="support-form" class="support-form" method="POST" novalidate>
         <div class="form-grid">
           <div class="field">
             <label for="pseudo">Pseudo Minecraft *</label>
@@ -367,7 +367,6 @@
         </div>
 
         <input type="hidden" name="_subject" value="Bloc-Coin | Nouvelle demande assistance" />
-        <input type="hidden" id="replyto" name="_replyto" value="" />
         <input type="text" id="website" name="website" class="hp" tabindex="-1" autocomplete="off" />
 
         <div class="form-footer">
@@ -375,9 +374,9 @@
           <span id="form-feedback" class="form-feedback" aria-live="polite"></span>
         </div>
       </form>
-      <p class="help-note">Formulaire actif: envoi direct vers Formspree puis reception sur la boite support configuree.</p>
+      <p class="help-note">Formulaire actif: envoi direct vers l'assistance Bloc-Coin avec un e-mail HTML dans le theme du site.</p>
       <p class="help-note">Adresse de reception configuree: ingaruriksonic@gmail.com</p>
-      <div class="code">const FORMSPREE_ENDPOINT = "https://formspree.io/f/mpqyrazk";</div>
+      <div class="code">Endpoint utilise: /api/support</div>
     </section>
 
     <section class="section">
@@ -400,7 +399,7 @@
   </main>
 
   <script>
-    const FORMSPREE_ENDPOINT = "https://formspree.io/f/mpqyrazk";
+    const SUPPORT_ENDPOINT = "/api/support";
 
     const supportForm = document.getElementById("support-form");
     const submitBtn = document.getElementById("support-submit");
@@ -434,12 +433,9 @@
       const message = (formData.get("message") || "").toString().trim();
       const capture = (formData.get("capture") || "").toString().trim();
 
-      document.getElementById("replyto").value = email;
-
       const payload = {
         pseudo: pseudo,
         email: email,
-        _replyto: email,
         categorie: categorie,
         objet: objet,
         message: message,
@@ -458,7 +454,7 @@
       setFeedback("Envoi en cours...", "");
 
       try {
-        const response = await fetch(FORMSPREE_ENDPOINT, {
+        const response = await fetch(SUPPORT_ENDPOINT, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -469,12 +465,17 @@
 
         if (!response.ok) {
           const details = await response.text();
-          console.error("Formspree error:", details);
+          console.error("Support API error:", details);
+          throw new Error("request_failed");
+        }
+
+        const result = await response.json();
+        if (!result.ok) {
           throw new Error("request_failed");
         }
 
         supportForm.reset();
-        setFeedback("Demande envoyee. Tu recevras une reponse par e-mail.", "ok");
+        setFeedback("Demande envoyee. L'equipe va te repondre par e-mail.", "ok");
       } catch (error) {
         setFeedback("Echec de l'envoi. Reessaye ou passe par le Discord d'aide.", "err");
       } finally {
