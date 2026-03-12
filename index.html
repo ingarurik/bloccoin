@@ -1099,6 +1099,36 @@
   reveals.forEach(el => revealObs.observe(el));
 
   /* ═══ SIDEBAR ═══ */
+  const ADMIN_EMAIL = 'ingaruriksonic@gmail.com';
+  const AUTH_STORAGE_KEY = 'sb-cimyrkybpnssyeyobyrh-auth-token';
+
+  function emailDepuisStockageAuth() {
+    try {
+      const raw = localStorage.getItem(AUTH_STORAGE_KEY) || sessionStorage.getItem(AUTH_STORAGE_KEY);
+      if (!raw) return '';
+      const parsed = JSON.parse(raw);
+      const session = parsed?.currentSession || parsed?.session || parsed;
+      return (session?.user?.email || '').trim().toLowerCase();
+    } catch (_) {
+      return '';
+    }
+  }
+
+  function synchroniserEtatAdmin() {
+    const email = emailDepuisStockageAuth();
+    const estAdmin = email === ADMIN_EMAIL;
+    document.body.classList.toggle('auth-admin', estAdmin);
+  }
+
+  window.addEventListener('bloccoin-admin-change', (event) => {
+    const estAdmin = !!event?.detail?.isAdmin;
+    document.body.classList.toggle('auth-admin', estAdmin);
+  });
+
+  window.addEventListener('storage', synchroniserEtatAdmin);
+  setInterval(synchroniserEtatAdmin, 1200);
+  synchroniserEtatAdmin();
+
   const CATS = {
     accueil: { ico:'🏠', ttl:'Accueil', pages:[
       {ico:'📄',lbl:'Présentation',file:'Présentation.html'},
